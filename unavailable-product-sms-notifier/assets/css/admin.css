@@ -1,0 +1,30 @@
+/* ── Status Badges ────────────────────────────────────────────────────── */
+.upsn-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.upsn-badge--pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.upsn-badge--notified {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+
+.upsn-badge--failed {
+    background: #f8d7da;
+    color: #58151c;
+}
+
+/* ── Table tweaks ─────────────────────────────────────────────────────── */
+.upsn-admin .wp-list-table .check-column {
+    width: 2em;
+}

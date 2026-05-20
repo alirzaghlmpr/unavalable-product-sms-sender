@@ -1,0 +1,158 @@
+/* ── Notify Button ────────────────────────────────────────────────────── */
+.upsn-notify-wrap {
+    margin: 12px 0;
+}
+
+.upsn-notify-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.upsn-notify-btn:hover,
+.upsn-notify-btn:focus {
+    background-color: #135e96;
+    outline: 2px solid #135e96;
+    outline-offset: 2px;
+}
+
+/* ── Modal Overlay ────────────────────────────────────────────────────── */
+.upsn-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upsn-modal[hidden] {
+    display: none;
+}
+
+.upsn-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* ── Modal Box ────────────────────────────────────────────────────────── */
+.upsn-modal__box {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    padding: 32px 28px 24px;
+    max-width: 420px;
+    width: calc(100% - 32px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    z-index: 1;
+}
+
+.upsn-modal__box h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+}
+
+.upsn-modal__box p {
+    margin: 0 0 20px;
+    color: #555;
+    font-size: 14px;
+}
+
+.upsn-modal__close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+    line-height: 1;
+    padding: 4px;
+}
+
+.upsn-modal__close:hover {
+    color: #333;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────── */
+#upsn-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+#upsn-phone {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    direction: ltr;
+}
+
+#upsn-phone:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25);
+}
+
+#upsn-phone.is-invalid {
+    border-color: #cc1818;
+}
+
+.upsn-error {
+    display: block;
+    color: #cc1818;
+    font-size: 13px;
+    min-height: 18px;
+    margin: 4px 0 12px;
+}
+
+#upsn-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 4px;
+}
+
+#upsn-submit-btn:hover:not(:disabled) {
+    background-color: #135e96;
+}
+
+#upsn-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Result Message ───────────────────────────────────────────────────── */
+.upsn-form-message {
+    margin-top: 14px;
+    font-size: 14px;
+    min-height: 20px;
+    text-align: center;
+}
+
+.upsn-form-message.is-success {
+    color: #1a7b4b;
+}
+
+.upsn-form-message.is-error {
+    color: #cc1818;
+}
