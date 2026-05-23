@@ -13,7 +13,9 @@ class UPSN_Frontend {
             return;
         }
 
-        global $product;
+        // global $product is not populated yet at wp_enqueue_scripts time;
+        // fetch via the queried object ID instead.
+        $product = wc_get_product( get_queried_object_id() );
         if ( ! $product instanceof WC_Product || $product->is_in_stock() ) {
             return;
         }
