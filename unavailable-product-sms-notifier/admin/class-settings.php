@@ -18,7 +18,11 @@ class UPSN_Settings {
             'button_bg'         => '#2271b1',
             'button_color'      => '#ffffff',
             'button_radius'     => '4',
-            // Modal
+            // Modal content
+            'modal_title'       => 'Notify Me When Available',
+            'modal_subtitle'    => 'Enter your phone number and we will send you an SMS as soon as this product is back in stock.',
+            'modal_text_dir'    => 'ltr',
+            // Modal style
             'overlay_opacity'   => '55',
             'modal_bg'          => '#ffffff',
             'modal_radius'      => '8',
@@ -66,8 +70,16 @@ class UPSN_Settings {
         self::field( 'upsn_btn', 'button_color',  __( 'Text Color', 'upsn' ),                'color'  );
         self::field( 'upsn_btn', 'button_radius', __( 'Border Radius (px)', 'upsn' ),        'number' );
 
-        // Modal
-        add_settings_section( 'upsn_modal', __( 'Popup Modal', 'upsn' ), '__return_false', 'upsn-settings' );
+        // Modal content
+        add_settings_section( 'upsn_modal_content', __( 'Popup Content', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_modal_content', 'modal_title',    __( 'Popup Title', 'upsn' ),       'text'     );
+        self::field( 'upsn_modal_content', 'modal_subtitle', __( 'Popup Subtitle', 'upsn' ),    'textarea' );
+        self::field( 'upsn_modal_content', 'modal_text_dir', __( 'Text Direction', 'upsn' ),    'select',
+            [ 'ltr' => __( 'LTR (Left to Right)', 'upsn' ), 'rtl' => __( 'RTL (Right to Left)', 'upsn' ) ]
+        );
+
+        // Modal style
+        add_settings_section( 'upsn_modal', __( 'Popup Style', 'upsn' ), '__return_false', 'upsn-settings' );
         self::field( 'upsn_modal', 'overlay_opacity', __( 'Overlay Opacity (0–100)', 'upsn' ), 'number' );
         self::field( 'upsn_modal', 'modal_bg',        __( 'Modal Background Color', 'upsn' ),  'color'  );
         self::field( 'upsn_modal', 'modal_radius',    __( 'Modal Border Radius (px)', 'upsn' ), 'number' );
@@ -87,22 +99,23 @@ class UPSN_Settings {
         self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
     }
 
-    private static function field( string $section, string $key, string $label, string $type ): void {
+    private static function field( string $section, string $key, string $label, string $type, array $options = [] ): void {
         add_settings_field(
             'upsn_' . $key,
             $label,
             [ __CLASS__, 'render_field' ],
             'upsn-settings',
             $section,
-            [ 'key' => $key, 'type' => $type ]
+            [ 'key' => $key, 'type' => $type, 'options' => $options ]
         );
     }
 
     public static function render_field( array $args ): void {
-        $key   = $args['key'];
-        $type  = $args['type'];
-        $value = self::get( $key );
-        $name  = self::OPTION_KEY . '[' . $key . ']';
+        $key     = $args['key'];
+        $type    = $args['type'];
+        $value   = self::get( $key );
+        $name    = self::OPTION_KEY . '[' . $key . ']';
+        $options = $args['options'] ?? [];
 
         switch ( $type ) {
             case 'color':
@@ -112,6 +125,7 @@ class UPSN_Settings {
                     esc_attr( $value )
                 );
                 break;
+
             case 'number':
                 printf(
                     '<input type="number" name="%s" value="%s" min="0" max="100" style="width:72px;" />',
@@ -119,6 +133,29 @@ class UPSN_Settings {
                     esc_attr( $value )
                 );
                 break;
+
+            case 'textarea':
+                printf(
+                    '<textarea name="%s" rows="3" style="width:100%%;max-width:420px;">%s</textarea>',
+                    esc_attr( $name ),
+                    esc_textarea( $value )
+                );
+                break;
+
+            case 'select':
+                $html = sprintf( '<select name="%s">', esc_attr( $name ) );
+                foreach ( $options as $opt_val => $opt_label ) {
+                    $html .= sprintf(
+                        '<option value="%s"%s>%s</option>',
+                        esc_attr( $opt_val ),
+                        selected( $value, $opt_val, false ),
+                        esc_html( $opt_label )
+                    );
+                }
+                $html .= '</select>';
+                echo $html;
+                break;
+
             default:
                 printf(
                     '<input type="text" name="%s" value="%s" style="width:100%%;max-width:420px;" />',
@@ -132,9 +169,10 @@ class UPSN_Settings {
         $clean = [];
         $defs  = self::defaults();
 
-        $color_keys  = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
-        $number_keys = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
-        $text_keys   = [ 'button_label', 'success_message' ];
+        $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
+        $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
+        $textarea_keys = [ 'modal_subtitle', 'success_message' ];
+        $select_keys   = [ 'modal_text_dir' => [ 'ltr', 'rtl' ] ];
 
         foreach ( $defs as $key => $default ) {
             $raw = $input[ $key ] ?? '';
@@ -142,8 +180,11 @@ class UPSN_Settings {
             if ( in_array( $key, $color_keys, true ) ) {
                 $clean[ $key ] = sanitize_hex_color( $raw ) ?? $default;
             } elseif ( in_array( $key, $number_keys, true ) ) {
-                $val = absint( $raw );
-                $clean[ $key ] = (string) min( $val, 100 );
+                $clean[ $key ] = (string) min( absint( $raw ), 100 );
+            } elseif ( in_array( $key, $textarea_keys, true ) ) {
+                $clean[ $key ] = sanitize_textarea_field( $raw ) ?: $default;
+            } elseif ( isset( $select_keys[ $key ] ) ) {
+                $clean[ $key ] = in_array( $raw, $select_keys[ $key ], true ) ? $raw : $default;
             } else {
                 $clean[ $key ] = sanitize_text_field( $raw ) ?: $default;
             }
@@ -179,6 +220,7 @@ class UPSN_Settings {
             '--upsn-overlay-alpha'  => $opacity,
             '--upsn-modal-bg'       => self::get( 'modal_bg' ),
             '--upsn-modal-radius'   => self::get( 'modal_radius' ) . 'px',
+            '--upsn-text-dir'       => self::get( 'modal_text_dir', 'ltr' ),
             '--upsn-input-border'   => self::get( 'input_border' ),
             '--upsn-input-focus'    => self::get( 'input_focus' ),
             '--upsn-submit-bg'      => self::get( 'submit_bg' ),

@@ -67,8 +67,8 @@ class UPSN_Frontend {
             <div class="upsn-modal__backdrop"></div>
             <div class="upsn-modal__box">
                 <button type="button" class="upsn-modal__close" aria-label="<?php esc_attr_e( 'Close', 'upsn' ); ?>">&times;</button>
-                <h2 id="upsn-modal-title"><?php esc_html_e( 'Notify Me When Available', 'upsn' ); ?></h2>
-                <p><?php esc_html_e( 'Enter your phone number and we will send you an SMS as soon as this product is back in stock.', 'upsn' ); ?></p>
+                <h2 id="upsn-modal-title"><?php echo esc_html( UPSN_Settings::get( 'modal_title' ) ); ?></h2>
+                <p><?php echo esc_html( UPSN_Settings::get( 'modal_subtitle' ) ); ?></p>
                 <form id="upsn-form" novalidate>
                     <label for="upsn-phone"><?php esc_html_e( 'Phone Number', 'upsn' ); ?></label>
                     <input

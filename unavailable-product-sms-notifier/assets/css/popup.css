@@ -6,6 +6,7 @@
     --upsn-overlay-alpha: 0.55;
     --upsn-modal-bg:      #ffffff;
     --upsn-modal-radius:  8px;
+    --upsn-text-dir:      ltr;
     --upsn-input-border:  #cccccc;
     --upsn-input-focus:   #2271b1;
     --upsn-submit-bg:     #2271b1;
@@ -69,6 +70,8 @@
     width: calc(100% - 32px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     z-index: 1;
+    direction: var(--upsn-text-dir);
+    text-align: start;
 }
 
 .upsn-modal__box h2 {
