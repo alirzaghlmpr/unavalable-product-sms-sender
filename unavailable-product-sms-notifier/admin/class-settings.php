@@ -22,6 +22,7 @@ class UPSN_Settings {
             'modal_title'       => 'Notify Me When Available',
             'modal_subtitle'    => 'Enter your phone number and we will send you an SMS as soon as this product is back in stock.',
             'modal_text_dir'    => 'ltr',
+            'submit_label'      => 'Notify Me',
             // Modal style
             'overlay_opacity'   => '55',
             'modal_bg'          => '#ffffff',
@@ -69,6 +70,7 @@ class UPSN_Settings {
         self::field( 'upsn_btn', 'button_bg',     __( 'Background Color', 'upsn' ),          'color'  );
         self::field( 'upsn_btn', 'button_color',  __( 'Text Color', 'upsn' ),                'color'  );
         self::field( 'upsn_btn', 'button_radius', __( 'Border Radius (px)', 'upsn' ),        'number' );
+        self::field( 'upsn_btn', 'submit_label',  __( 'Submit Button Text', 'upsn' ),        'text'   );
 
         // Modal content
         add_settings_section( 'upsn_modal_content', __( 'Popup Content', 'upsn' ), '__return_false', 'upsn-settings' );

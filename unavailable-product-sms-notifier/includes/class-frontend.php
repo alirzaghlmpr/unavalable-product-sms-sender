@@ -82,7 +82,7 @@ class UPSN_Frontend {
                     />
                     <span id="upsn-phone-error" class="upsn-error" aria-live="polite"></span>
                     <button type="submit" id="upsn-submit-btn">
-                        <?php esc_html_e( 'Notify Me', 'upsn' ); ?>
+                        <?php echo esc_html( UPSN_Settings::get( 'submit_label' ) ); ?>
                     </button>
                     <div id="upsn-form-message" class="upsn-form-message" aria-live="polite"></div>
                 </form>
