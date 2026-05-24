@@ -56,7 +56,9 @@ function upsn_init() {
     require_once UPSN_PATH . 'includes/class-request-handler.php';
     require_once UPSN_PATH . 'includes/class-stock-watcher.php';
     require_once UPSN_PATH . 'admin/class-admin-panel.php';
+    require_once UPSN_PATH . 'admin/class-settings.php';
 
+    UPSN_Settings::init();
     UPSN_Frontend::init();
     UPSN_Request_Handler::init();
     UPSN_Stock_Watcher::init();

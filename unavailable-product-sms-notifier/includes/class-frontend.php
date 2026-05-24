@@ -27,6 +27,8 @@ class UPSN_Frontend {
             UPSN_VERSION
         );
 
+        wp_add_inline_style( 'upsn-popup', UPSN_Settings::inline_css() );
+
         wp_enqueue_script(
             'upsn-popup',
             UPSN_URL . 'assets/js/popup.js',
@@ -42,7 +44,7 @@ class UPSN_Frontend {
             'i18n'       => [
                 'invalidPhone'  => __( 'Please enter a valid phone number.', 'upsn' ),
                 'alreadyDone'   => __( 'You have already registered for this product.', 'upsn' ),
-                'success'       => __( 'You will be notified via SMS when this product is back in stock.', 'upsn' ),
+                'success'       => UPSN_Settings::get( 'success_message' ),
                 'error'         => __( 'Something went wrong. Please try again.', 'upsn' ),
                 'sending'       => __( 'Please wait…', 'upsn' ),
             ],
@@ -57,7 +59,7 @@ class UPSN_Frontend {
         ?>
         <div class="upsn-notify-wrap">
             <button type="button" id="upsn-open-btn" class="upsn-notify-btn">
-                <?php esc_html_e( 'Notify Me When Available', 'upsn' ); ?>
+                <?php echo esc_html( UPSN_Settings::get( 'button_label' ) ); ?>
             </button>
         </div>
 

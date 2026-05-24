@@ -10,7 +10,7 @@
 
     var modal      = document.getElementById('upsn-modal');
     var openBtn    = document.getElementById('upsn-open-btn');
-    var closeBtn   = modal ? modal.querySelector('.upsn-modal__close') : null;
+    var closeBtn   = modal ? modal.querySelector('.upsn-modal__close')  : null;
     var backdrop   = modal ? modal.querySelector('.upsn-modal__backdrop') : null;
     var form       = document.getElementById('upsn-form');
     var phoneInput = document.getElementById('upsn-phone');
@@ -21,6 +21,9 @@
     if (!modal || !openBtn) {
         return;
     }
+
+    // Store original submit label so we can restore it after errors
+    var originalSubmitLabel = submitBtn ? submitBtn.textContent : '';
 
     // ── Open / close helpers ───────────────────────────────────────────────
     function openModal() {
@@ -37,6 +40,55 @@
         if (form) form.reset();
         clearError();
         clearMessage();
+
+        // Restore form fields visibility in case a previous success hid them
+        if (form) {
+            form.querySelectorAll('.upsn-success-state').forEach(function (el) {
+                el.remove();
+            });
+            showFormFields();
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = originalSubmitLabel;
+        }
+    }
+
+    function hideFormFields() {
+        if (!form) return;
+        form.querySelectorAll('label, #upsn-phone, #upsn-phone-error, #upsn-submit-btn, #upsn-form-message').forEach(function (el) {
+            el.style.display = 'none';
+        });
+    }
+
+    function showFormFields() {
+        if (!form) return;
+        form.querySelectorAll('label, #upsn-phone, #upsn-phone-error, #upsn-submit-btn, #upsn-form-message').forEach(function (el) {
+            el.style.display = '';
+        });
+    }
+
+    function showSuccessState() {
+        hideFormFields();
+
+        var successHtml =
+            '<div class="upsn-success-state">' +
+                '<div class="upsn-success-state__icon">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                        '<polyline points="20 6 9 17 4 12"></polyline>' +
+                    '</svg>' +
+                '</div>' +
+                '<p class="upsn-success-state__text">' + escapeHtml(upsnData.i18n.success) + '</p>' +
+            '</div>';
+
+        form.insertAdjacentHTML('beforeend', successHtml);
+    }
+
+    function escapeHtml(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
     }
 
     function clearError() {
@@ -117,29 +169,24 @@
                 },
                 success: function (response) {
                     if (response.success) {
-                        showMessage(upsnData.i18n.success, 'success');
-                        if (form) form.reset();
-                        submitBtn.disabled = true; // keep disabled after success
+                        showSuccessState();
                         return;
                     }
 
+                    // Error — restore button and show message
+                    submitBtn.disabled    = false;
+                    submitBtn.textContent = originalSubmitLabel;
+
                     var code = response.data && response.data.code;
-                    if (code === 'already_registered') {
-                        showMessage(upsnData.i18n.alreadyDone, 'error');
-                        submitBtn.disabled = false;
-                    } else {
-                        showMessage(upsnData.i18n.error, 'error');
-                        submitBtn.disabled = false;
-                    }
+                    showMessage(
+                        code === 'already_registered' ? upsnData.i18n.alreadyDone : upsnData.i18n.error,
+                        'error'
+                    );
                 },
                 error: function () {
+                    submitBtn.disabled    = false;
+                    submitBtn.textContent = originalSubmitLabel;
                     showMessage(upsnData.i18n.error, 'error');
-                    submitBtn.disabled = false;
-                },
-                complete: function () {
-                    if (!submitBtn.disabled) {
-                        submitBtn.textContent = upsnData.i18n.notifyMe || 'Notify Me';
-                    }
                 }
             });
         });

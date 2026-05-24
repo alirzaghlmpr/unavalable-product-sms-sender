@@ -1,3 +1,20 @@
+/* ── CSS Custom Properties (overridden by inline style from settings) ──── */
+:root {
+    --upsn-btn-bg:        #2271b1;
+    --upsn-btn-color:     #ffffff;
+    --upsn-btn-radius:    4px;
+    --upsn-overlay-alpha: 0.55;
+    --upsn-modal-bg:      #ffffff;
+    --upsn-modal-radius:  8px;
+    --upsn-input-border:  #cccccc;
+    --upsn-input-focus:   #2271b1;
+    --upsn-submit-bg:     #2271b1;
+    --upsn-submit-color:  #ffffff;
+    --upsn-submit-radius: 4px;
+    --upsn-success-color: #1a7b4b;
+    --upsn-error-color:   #cc1818;
+}
+
 /* ── Notify Button ────────────────────────────────────────────────────── */
 .upsn-notify-wrap {
     margin: 12px 0;
@@ -6,19 +23,19 @@
 .upsn-notify-btn {
     display: inline-block;
     padding: 12px 24px;
-    background-color: #2271b1;
-    color: #fff;
+    background-color: var(--upsn-btn-bg);
+    color: var(--upsn-btn-color);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--upsn-btn-radius);
     font-size: 15px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: filter 0.2s ease;
 }
 
 .upsn-notify-btn:hover,
 .upsn-notify-btn:focus {
-    background-color: #135e96;
-    outline: 2px solid #135e96;
+    filter: brightness(0.85);
+    outline: 2px solid var(--upsn-btn-bg);
     outline-offset: 2px;
 }
 
@@ -39,14 +56,14 @@
 .upsn-modal__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, var(--upsn-overlay-alpha));
 }
 
 /* ── Modal Box ────────────────────────────────────────────────────────── */
 .upsn-modal__box {
     position: relative;
-    background: #fff;
-    border-radius: 8px;
+    background: var(--upsn-modal-bg);
+    border-radius: var(--upsn-modal-radius);
     padding: 32px 28px 24px;
     max-width: 420px;
     width: calc(100% - 32px);
@@ -93,7 +110,7 @@
 #upsn-phone {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--upsn-input-border);
     border-radius: 4px;
     font-size: 15px;
     box-sizing: border-box;
@@ -102,18 +119,18 @@
 }
 
 #upsn-phone:focus {
-    border-color: #2271b1;
+    border-color: var(--upsn-input-focus);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--upsn-input-focus) 25%, transparent);
 }
 
 #upsn-phone.is-invalid {
-    border-color: #cc1818;
+    border-color: var(--upsn-error-color);
 }
 
 .upsn-error {
     display: block;
-    color: #cc1818;
+    color: var(--upsn-error-color);
     font-size: 13px;
     min-height: 18px;
     margin: 4px 0 12px;
@@ -122,18 +139,18 @@
 #upsn-submit-btn {
     width: 100%;
     padding: 12px;
-    background-color: #2271b1;
-    color: #fff;
+    background-color: var(--upsn-submit-bg);
+    color: var(--upsn-submit-color);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--upsn-submit-radius);
     font-size: 15px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: filter 0.2s ease;
     margin-top: 4px;
 }
 
 #upsn-submit-btn:hover:not(:disabled) {
-    background-color: #135e96;
+    filter: brightness(0.85);
 }
 
 #upsn-submit-btn:disabled {
@@ -143,16 +160,46 @@
 
 /* ── Result Message ───────────────────────────────────────────────────── */
 .upsn-form-message {
-    margin-top: 14px;
     font-size: 14px;
     min-height: 20px;
     text-align: center;
 }
 
 .upsn-form-message.is-success {
-    color: #1a7b4b;
+    color: var(--upsn-success-color);
 }
 
 .upsn-form-message.is-error {
-    color: #cc1818;
+    color: var(--upsn-error-color);
+    margin-top: 10px;
+}
+
+/* ── Success State ────────────────────────────────────────────────────── */
+.upsn-success-state {
+    text-align: center;
+    padding: 8px 0 4px;
+}
+
+.upsn-success-state__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: color-mix(in srgb, var(--upsn-success-color) 12%, transparent);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+}
+
+.upsn-success-state__icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--upsn-success-color);
+}
+
+.upsn-success-state__text {
+    font-size: 15px;
+    color: var(--upsn-success-color);
+    font-weight: 500;
+    margin: 0;
 }
