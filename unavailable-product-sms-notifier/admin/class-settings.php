@@ -37,6 +37,10 @@ class UPSN_Settings {
             'success_message'   => 'You will be notified via SMS when this product is back in stock.',
             'success_color'     => '#1a7b4b',
             'error_color'       => '#cc1818',
+            // SMS Provider
+            'sms_api_key'           => '',
+            'sms_line_number'       => '',
+            'sms_message_template'  => 'محصول {product_name} دوباره موجود شد! همین حالا سفارش دهید.',
         ];
     }
 
@@ -99,16 +103,37 @@ class UPSN_Settings {
         self::field( 'upsn_msg', 'success_message', __( 'Success Message Text', 'upsn' ), 'text'  );
         self::field( 'upsn_msg', 'success_color',   __( 'Success Text Color', 'upsn' ),   'color' );
         self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
+
+        // SMS Provider
+        add_settings_section( 'upsn_sms', __( 'SMS Provider (sms.ir)', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_sms', 'sms_api_key',
+            __( 'API Key', 'upsn' ),
+            'password',
+            [],
+            __( 'Your X-API-KEY from sms.ir dashboard.', 'upsn' )
+        );
+        self::field( 'upsn_sms', 'sms_line_number',
+            __( 'Line Number', 'upsn' ),
+            'text',
+            [],
+            __( 'Your dedicated line number (e.g. 300000000000).', 'upsn' )
+        );
+        self::field( 'upsn_sms', 'sms_message_template',
+            __( 'Message Template', 'upsn' ),
+            'textarea',
+            [],
+            __( 'Use {product_name} as a placeholder for the product name.', 'upsn' )
+        );
     }
 
-    private static function field( string $section, string $key, string $label, string $type, array $options = [] ): void {
+    private static function field( string $section, string $key, string $label, string $type, array $options = [], string $desc = '' ): void {
         add_settings_field(
             'upsn_' . $key,
             $label,
             [ __CLASS__, 'render_field' ],
             'upsn-settings',
             $section,
-            [ 'key' => $key, 'type' => $type, 'options' => $options ]
+            [ 'key' => $key, 'type' => $type, 'options' => $options, 'desc' => $desc ]
         );
     }
 
@@ -118,6 +143,7 @@ class UPSN_Settings {
         $value   = self::get( $key );
         $name    = self::OPTION_KEY . '[' . $key . ']';
         $options = $args['options'] ?? [];
+        $desc    = $args['desc']    ?? '';
 
         switch ( $type ) {
             case 'color':
@@ -131,6 +157,14 @@ class UPSN_Settings {
             case 'number':
                 printf(
                     '<input type="number" name="%s" value="%s" min="0" max="100" style="width:72px;" />',
+                    esc_attr( $name ),
+                    esc_attr( $value )
+                );
+                break;
+
+            case 'password':
+                printf(
+                    '<input type="password" name="%s" value="%s" style="width:100%%;max-width:420px;" autocomplete="off" />',
                     esc_attr( $name ),
                     esc_attr( $value )
                 );
@@ -165,6 +199,10 @@ class UPSN_Settings {
                     esc_attr( $value )
                 );
         }
+
+        if ( $desc ) {
+            printf( '<p class="description">%s</p>', esc_html( $desc ) );
+        }
     }
 
     public static function sanitize( $input ): array {
@@ -173,8 +211,9 @@ class UPSN_Settings {
 
         $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
         $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
-        $textarea_keys = [ 'modal_subtitle', 'success_message' ];
+        $textarea_keys = [ 'modal_subtitle', 'success_message', 'sms_message_template' ];
         $select_keys   = [ 'modal_text_dir' => [ 'ltr', 'rtl' ] ];
+        // sms_api_key and sms_line_number fall through to the default sanitize_text_field branch
 
         foreach ( $defs as $key => $default ) {
             $raw = $input[ $key ] ?? '';
@@ -188,7 +227,10 @@ class UPSN_Settings {
             } elseif ( isset( $select_keys[ $key ] ) ) {
                 $clean[ $key ] = in_array( $raw, $select_keys[ $key ], true ) ? $raw : $default;
             } else {
-                $clean[ $key ] = sanitize_text_field( $raw ) ?: $default;
+                $sanitized = sanitize_text_field( $raw );
+                // Allow intentionally empty fields (e.g. API key not yet set)
+                $allow_empty = in_array( $key, [ 'sms_api_key', 'sms_line_number' ], true );
+                $clean[ $key ] = ( $sanitized === '' && ! $allow_empty ) ? $default : $sanitized;
             }
         }
 
