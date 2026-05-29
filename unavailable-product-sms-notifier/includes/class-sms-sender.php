@@ -3,21 +3,20 @@ defined( 'ABSPATH' ) || exit;
 
 class UPSN_SMS_Sender {
 
-    const API_ENDPOINT = 'https://api.sms.ir/v1/send/bulk';
+    const API_ENDPOINT = 'https://api.sms.ir/v1/send/verify';
 
     public static function send( string $phone, int $product_id ): bool {
         $api_key     = UPSN_Settings::get( 'sms_api_key' );
-        $line_number = UPSN_Settings::get( 'sms_line_number' );
-        $template    = UPSN_Settings::get( 'sms_message_template' );
+        $template_id = UPSN_Settings::get( 'sms_template_id' );
+        $param_name  = UPSN_Settings::get( 'sms_param_name' );
 
-        if ( ! $api_key || ! $line_number ) {
-            error_log( '[UPSN] SMS skipped: API key or line number not configured.' );
+        if ( ! $api_key || ! $template_id ) {
+            error_log( '[UPSN] SMS skipped: API key or template ID not configured.' );
             return false;
         }
 
         $product      = wc_get_product( $product_id );
         $product_name = $product ? $product->get_name() : "#{$product_id}";
-        $message      = str_replace( '{product_name}', $product_name, $template );
 
         $response = wp_remote_post(
             self::API_ENDPOINT,
@@ -25,15 +24,16 @@ class UPSN_SMS_Sender {
                 'timeout'     => 15,
                 'redirection' => 5,
                 'headers'     => [
-                    'X-API-KEY'    => $api_key,
                     'Content-Type' => 'application/json',
-                    'Accept'       => 'application/json',
+                    'Accept'       => 'text/plain',
+                    'x-api-key'    => $api_key,
                 ],
-                'body'        => wp_json_encode( [
-                    'lineNumber'   => (string) $line_number,
-                    'messageText'  => $message,
-                    'mobiles'      => [ $phone ],
-                    'sendDateTime' => null,
+                'body' => wp_json_encode( [
+                    'mobile'     => $phone,
+                    'templateId' => (int) $template_id,
+                    'parameters' => [
+                        [ 'name' => $param_name, 'value' => $product_name ],
+                    ],
                 ] ),
             ]
         );
@@ -47,7 +47,6 @@ class UPSN_SMS_Sender {
         $raw_body  = wp_remote_retrieve_body( $response );
         $body      = json_decode( $raw_body, true );
 
-        // sms.ir returns status:1 on success
         if ( $http_code === 200 && isset( $body['status'] ) && (int) $body['status'] === 1 ) {
             return true;
         }

@@ -38,9 +38,9 @@ class UPSN_Settings {
             'success_color'     => '#1a7b4b',
             'error_color'       => '#cc1818',
             // SMS Provider
-            'sms_api_key'           => '',
-            'sms_line_number'       => '',
-            'sms_message_template'  => 'محصول {product_name} دوباره موجود شد! همین حالا سفارش دهید.',
+            'sms_api_key'       => '',
+            'sms_template_id'   => '',
+            'sms_param_name'    => 'product',
         ];
     }
 
@@ -110,19 +110,19 @@ class UPSN_Settings {
             __( 'API Key', 'upsn' ),
             'password',
             [],
-            __( 'Your X-API-KEY from sms.ir dashboard.', 'upsn' )
+            __( 'Your x-api-key from sms.ir dashboard.', 'upsn' )
         );
-        self::field( 'upsn_sms', 'sms_line_number',
-            __( 'Line Number', 'upsn' ),
+        self::field( 'upsn_sms', 'sms_template_id',
+            __( 'Template ID', 'upsn' ),
             'text',
             [],
-            __( 'Your dedicated line number (e.g. 300000000000).', 'upsn' )
+            __( 'The numeric ID of the verify template you created in sms.ir.', 'upsn' )
         );
-        self::field( 'upsn_sms', 'sms_message_template',
-            __( 'Message Template', 'upsn' ),
-            'textarea',
+        self::field( 'upsn_sms', 'sms_param_name',
+            __( 'Product Parameter Name', 'upsn' ),
+            'text',
             [],
-            __( 'Use {product_name} as a placeholder for the product name.', 'upsn' )
+            __( 'The parameter name defined in your sms.ir template that receives the product name (e.g. "product").', 'upsn' )
         );
     }
 
@@ -211,9 +211,9 @@ class UPSN_Settings {
 
         $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
         $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
-        $textarea_keys = [ 'modal_subtitle', 'success_message', 'sms_message_template' ];
+        $textarea_keys = [ 'modal_subtitle', 'success_message' ];
         $select_keys   = [ 'modal_text_dir' => [ 'ltr', 'rtl' ] ];
-        // sms_api_key and sms_line_number fall through to the default sanitize_text_field branch
+        // sms_api_key and sms_template_id are intentionally allowed to be empty (not yet configured)
 
         foreach ( $defs as $key => $default ) {
             $raw = $input[ $key ] ?? '';
@@ -229,7 +229,7 @@ class UPSN_Settings {
             } else {
                 $sanitized = sanitize_text_field( $raw );
                 // Allow intentionally empty fields (e.g. API key not yet set)
-                $allow_empty = in_array( $key, [ 'sms_api_key', 'sms_line_number' ], true );
+                $allow_empty = in_array( $key, [ 'sms_api_key', 'sms_template_id' ], true );
                 $clean[ $key ] = ( $sanitized === '' && ! $allow_empty ) ? $default : $sanitized;
             }
         }
