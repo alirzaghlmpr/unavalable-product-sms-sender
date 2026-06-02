@@ -14,17 +14,17 @@ class UPSN_Settings {
     public static function defaults(): array {
         return [
             // Button
-            'button_label'      => 'Notify Me When Available',
+            'button_label'      => 'اطلاع‌رسانی موجود شدن',
             'button_bg'         => '#2271b1',
             'button_color'      => '#ffffff',
             'button_radius'     => '4',
             // Modal content
-            'modal_title'       => 'Notify Me When Available',
-            'modal_subtitle'    => 'Enter your phone number and we will send you an SMS as soon as this product is back in stock.',
-            'modal_text_dir'    => 'ltr',
-            'phone_label'       => 'Phone Number',
-            'sending_label'     => 'Please wait…',
-            'submit_label'      => 'Notify Me',
+            'modal_title'       => 'اطلاع‌رسانی موجود شدن محصول',
+            'modal_subtitle'    => 'شماره موبایل خود را وارد کنید تا به محض موجود شدن این محصول از طریق پیامک به شما اطلاع دهیم.',
+            'modal_text_dir'    => 'rtl',
+            'phone_label'       => 'شماره موبایل',
+            'sending_label'     => 'لطفاً صبر کنید...',
+            'submit_label'      => 'ثبت درخواست',
             // Modal style
             'overlay_opacity'   => '55',
             'modal_bg'          => '#ffffff',
@@ -36,14 +36,14 @@ class UPSN_Settings {
             'submit_color'      => '#ffffff',
             'submit_radius'     => '4',
             // Messages
-            'success_message'       => 'You will be notified via SMS when this product is back in stock.',
+            'success_message'       => 'درخواست شما با موفقیت ثبت شد. به محض موجود شدن محصول از طریق پیامک به شما اطلاع می‌دهیم.',
             'success_color'         => '#1a7b4b',
             'error_color'           => '#cc1818',
-            'invalid_phone_error'   => 'Please enter a valid phone number.',
-            'already_registered_error' => 'You have already registered for this product.',
-            'ip_limit_error'        => 'Too many requests from your location. Please try again later.',
-            'phone_limit_error'     => 'This phone number has reached the maximum number of requests for today.',
-            'generic_error'         => 'Something went wrong. Please try again.',
+            'invalid_phone_error'   => 'لطفاً یک شماره موبایل معتبر وارد کنید.',
+            'already_registered_error' => 'این شماره موبایل قبلاً برای این محصول ثبت شده است.',
+            'ip_limit_error'        => 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً بعداً دوباره امتحان کنید.',
+            'phone_limit_error'     => 'این شماره موبایل به حداکثر تعداد درخواست‌های مجاز امروز رسیده است.',
+            'generic_error'         => 'خطایی رخ داد. لطفاً دوباره تلاش کنید.',
             // Anti-spam
             'spam_ip_limit'     => '5',
             'spam_phone_limit'  => '3',
@@ -68,8 +68,8 @@ class UPSN_Settings {
     public static function register_menu(): void {
         add_submenu_page(
             'woocommerce',
-            __( 'SMS Notify Settings', 'upsn' ),
-            __( 'SMS Notify Settings', 'upsn' ),
+            __( 'تنظیمات اطلاع‌رسانی پیامکی', 'upsn' ),
+            __( 'تنظیمات اطلاع‌رسانی پیامکی', 'upsn' ),
             'manage_woocommerce',
             'upsn-settings',
             [ __CLASS__, 'render_page' ]
@@ -83,108 +83,108 @@ class UPSN_Settings {
         ] );
 
         // Button
-        add_settings_section( 'upsn_btn',  __( 'Notify Button', 'upsn' ),  '__return_false', 'upsn-settings' );
-        self::field( 'upsn_btn', 'button_label',  __( 'Button Label', 'upsn' ),              'text'   );
-        self::field( 'upsn_btn', 'button_bg',     __( 'Background Color', 'upsn' ),          'color'  );
-        self::field( 'upsn_btn', 'button_color',  __( 'Text Color', 'upsn' ),                'color'  );
-        self::field( 'upsn_btn', 'button_radius', __( 'Border Radius (px)', 'upsn' ),        'number' );
-        self::field( 'upsn_btn', 'submit_label',  __( 'Submit Button Text', 'upsn' ),        'text'   );
+        add_settings_section( 'upsn_btn',  __( 'دکمه اطلاع‌رسانی', 'upsn' ),  '__return_false', 'upsn-settings' );
+        self::field( 'upsn_btn', 'button_label',  __( 'متن دکمه', 'upsn' ),                    'text'   );
+        self::field( 'upsn_btn', 'button_bg',     __( 'رنگ پس‌زمینه', 'upsn' ),               'color'  );
+        self::field( 'upsn_btn', 'button_color',  __( 'رنگ متن', 'upsn' ),                     'color'  );
+        self::field( 'upsn_btn', 'button_radius', __( 'شعاع گوشه (px)', 'upsn' ),              'number' );
+        self::field( 'upsn_btn', 'submit_label',  __( 'متن دکمه ثبت', 'upsn' ),               'text'   );
 
         // Modal content
-        add_settings_section( 'upsn_modal_content', __( 'Popup Content', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_modal_content', 'modal_title',    __( 'Popup Title', 'upsn' ),         'text'     );
-        self::field( 'upsn_modal_content', 'modal_subtitle', __( 'Popup Subtitle', 'upsn' ),      'textarea' );
-        self::field( 'upsn_modal_content', 'phone_label',    __( 'Phone Field Label', 'upsn' ),   'text'     );
-        self::field( 'upsn_modal_content', 'sending_label',  __( 'Sending Button Text', 'upsn' ), 'text',    [],
-            __( 'Button text shown while the request is being submitted.', 'upsn' )
+        add_settings_section( 'upsn_modal_content', __( 'محتوای پاپ‌آپ', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_modal_content', 'modal_title',    __( 'عنوان پاپ‌آپ', 'upsn' ),         'text'     );
+        self::field( 'upsn_modal_content', 'modal_subtitle', __( 'زیرعنوان پاپ‌آپ', 'upsn' ),      'textarea' );
+        self::field( 'upsn_modal_content', 'phone_label',    __( 'برچسب فیلد موبایل', 'upsn' ),    'text'     );
+        self::field( 'upsn_modal_content', 'sending_label',  __( 'متن دکمه در حال ارسال', 'upsn' ), 'text', [],
+            __( 'متنی که هنگام ارسال درخواست روی دکمه نمایش داده می‌شود.', 'upsn' )
         );
-        self::field( 'upsn_modal_content', 'modal_text_dir', __( 'Text Direction', 'upsn' ),      'select',
-            [ 'ltr' => __( 'LTR (Left to Right)', 'upsn' ), 'rtl' => __( 'RTL (Right to Left)', 'upsn' ) ]
+        self::field( 'upsn_modal_content', 'modal_text_dir', __( 'جهت متن', 'upsn' ), 'select',
+            [ 'ltr' => __( 'چپ به راست (LTR)', 'upsn' ), 'rtl' => __( 'راست به چپ (RTL)', 'upsn' ) ]
         );
 
         // Modal style
-        add_settings_section( 'upsn_modal', __( 'Popup Style', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_modal', 'overlay_opacity', __( 'Overlay Opacity (0–100)', 'upsn' ), 'number' );
-        self::field( 'upsn_modal', 'modal_bg',        __( 'Modal Background Color', 'upsn' ),  'color'  );
-        self::field( 'upsn_modal', 'modal_radius',    __( 'Modal Border Radius (px)', 'upsn' ), 'number' );
+        add_settings_section( 'upsn_modal', __( 'استایل پاپ‌آپ', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_modal', 'overlay_opacity', __( 'شفافیت پوشش (۰–۱۰۰)', 'upsn' ),    'number' );
+        self::field( 'upsn_modal', 'modal_bg',        __( 'رنگ پس‌زمینه مودال', 'upsn' ),     'color'  );
+        self::field( 'upsn_modal', 'modal_radius',    __( 'شعاع گوشه مودال (px)', 'upsn' ),   'number' );
 
         // Form
-        add_settings_section( 'upsn_form', __( 'Form Styles', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_form', 'input_border',   __( 'Input Border Color', 'upsn' ),         'color'  );
-        self::field( 'upsn_form', 'input_focus',    __( 'Input Focus Color', 'upsn' ),           'color'  );
-        self::field( 'upsn_form', 'submit_bg',      __( 'Submit Button Background', 'upsn' ),    'color'  );
-        self::field( 'upsn_form', 'submit_color',   __( 'Submit Button Text Color', 'upsn' ),    'color'  );
-        self::field( 'upsn_form', 'submit_radius',  __( 'Submit Border Radius (px)', 'upsn' ),   'number' );
+        add_settings_section( 'upsn_form', __( 'استایل فرم', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_form', 'input_border',   __( 'رنگ حاشیه فیلد', 'upsn' ),          'color'  );
+        self::field( 'upsn_form', 'input_focus',    __( 'رنگ فوکوس فیلد', 'upsn' ),          'color'  );
+        self::field( 'upsn_form', 'submit_bg',      __( 'رنگ پس‌زمینه دکمه ثبت', 'upsn' ),   'color'  );
+        self::field( 'upsn_form', 'submit_color',   __( 'رنگ متن دکمه ثبت', 'upsn' ),        'color'  );
+        self::field( 'upsn_form', 'submit_radius',  __( 'شعاع گوشه دکمه ثبت (px)', 'upsn' ), 'number' );
 
         // Messages
-        add_settings_section( 'upsn_msg', __( 'Messages & Errors', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_msg', 'success_message', __( 'Success Message', 'upsn' ), 'text' );
-        self::field( 'upsn_msg', 'success_color',   __( 'Success Text Color', 'upsn' ),   'color' );
-        self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
+        add_settings_section( 'upsn_msg', __( 'پیام‌ها و خطاها', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_msg', 'success_message', __( 'پیام موفقیت', 'upsn' ), 'text' );
+        self::field( 'upsn_msg', 'success_color',   __( 'رنگ متن موفقیت', 'upsn' ),   'color' );
+        self::field( 'upsn_msg', 'error_color',     __( 'رنگ متن خطا', 'upsn' ),      'color' );
 
         self::field( 'upsn_msg', 'invalid_phone_error',
-            __( 'Invalid Phone Error', 'upsn' ), 'text', [],
-            __( 'Shown when the user enters an invalid phone number.', 'upsn' )
+            __( 'خطای موبایل نامعتبر', 'upsn' ), 'text', [],
+            __( 'هنگامی نمایش داده می‌شود که کاربر شماره موبایل نامعتبر وارد کند.', 'upsn' )
         );
         self::field( 'upsn_msg', 'already_registered_error',
-            __( 'Already Registered Error', 'upsn' ), 'text', [],
-            __( 'Shown when the phone number is already registered for this product.', 'upsn' )
+            __( 'خطای ثبت تکراری', 'upsn' ), 'text', [],
+            __( 'هنگامی نمایش داده می‌شود که شماره موبایل قبلاً برای این محصول ثبت شده باشد.', 'upsn' )
         );
         self::field( 'upsn_msg', 'ip_limit_error',
-            __( 'IP Rate Limit Error', 'upsn' ), 'text', [],
-            __( 'Shown when the IP has exceeded the hourly request limit.', 'upsn' )
+            __( 'خطای محدودیت IP', 'upsn' ), 'text', [],
+            __( 'هنگامی نمایش داده می‌شود که IP از حد مجاز درخواست در ساعت بگذرد.', 'upsn' )
         );
         self::field( 'upsn_msg', 'phone_limit_error',
-            __( 'Phone Rate Limit Error', 'upsn' ), 'text', [],
-            __( 'Shown when the phone number has exceeded the daily request limit.', 'upsn' )
+            __( 'خطای محدودیت موبایل', 'upsn' ), 'text', [],
+            __( 'هنگامی نمایش داده می‌شود که شماره موبایل از حد مجاز روزانه بگذرد.', 'upsn' )
         );
         self::field( 'upsn_msg', 'generic_error',
-            __( 'Generic Error Message', 'upsn' ), 'text', [],
-            __( 'Shown for other errors (server issues, etc).', 'upsn' )
+            __( 'خطای عمومی', 'upsn' ), 'text', [],
+            __( 'برای سایر خطاها (مشکلات سرور و غیره) نمایش داده می‌شود.', 'upsn' )
         );
 
         // Anti-spam
-        add_settings_section( 'upsn_spam', __( 'Anti-Spam', 'upsn' ), '__return_false', 'upsn-settings' );
+        add_settings_section( 'upsn_spam', __( 'ضدهرزنامه', 'upsn' ), '__return_false', 'upsn-settings' );
         self::field( 'upsn_spam', 'spam_ip_limit',
-            __( 'Max Requests per IP / Hour', 'upsn' ), 'number', [],
-            __( 'Block an IP after this many submissions per hour. Set to 0 to disable.', 'upsn' )
+            __( 'حداکثر درخواست به ازای IP در ساعت', 'upsn' ), 'number', [],
+            __( 'پس از این تعداد ارسال در ساعت، IP مسدود می‌شود. برای غیرفعال‌سازی ۰ وارد کنید.', 'upsn' )
         );
         self::field( 'upsn_spam', 'spam_phone_limit',
-            __( 'Max Requests per Phone / Day', 'upsn' ), 'number', [],
-            __( 'Block a phone number after this many submissions across all products per day. Set to 0 to disable.', 'upsn' )
+            __( 'حداکثر درخواست به ازای موبایل در روز', 'upsn' ), 'number', [],
+            __( 'پس از این تعداد ارسال در روز برای تمام محصولات، شماره موبایل مسدود می‌شود. برای غیرفعال‌سازی ۰ وارد کنید.', 'upsn' )
         );
 
         // SMS Provider
-        add_settings_section( 'upsn_sms', __( 'SMS Provider', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_sms', 'sms_gateway', __( 'Gateway', 'upsn' ), 'select', [
+        add_settings_section( 'upsn_sms', __( 'ارائه‌دهنده پیامک', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_sms', 'sms_gateway', __( 'درگاه پیامک', 'upsn' ), 'select', [
             'smsir'       => 'SMS.ir',
             'kavenegar'   => 'Kavenegar',
             'farazsms'    => 'FarazSMS',
             'melipayamak' => 'MeliPayamak',
         ] );
         self::field( 'upsn_sms', 'sms_api_key',
-            __( 'API Key', 'upsn' ), 'password', [],
+            __( 'کلید API', 'upsn' ), 'password', [],
             __( 'SMS.ir → X-API-KEY | Kavenegar → API Key', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_username',
-            __( 'Username', 'upsn' ), 'text', [],
+            __( 'نام کاربری', 'upsn' ), 'text', [],
             __( 'FarazSMS | MeliPayamak', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_password',
-            __( 'Password', 'upsn' ), 'password', [],
+            __( 'رمز عبور', 'upsn' ), 'password', [],
             __( 'FarazSMS | MeliPayamak', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_line_number',
-            __( 'Line Number', 'upsn' ), 'text', [],
-            __( 'FarazSMS only — your dedicated sender line.', 'upsn' )
+            __( 'شماره خط', 'upsn' ), 'text', [],
+            __( 'فقط برای FarazSMS — شماره خط اختصاصی شما.', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_pattern',
-            __( 'Pattern / Template ID', 'upsn' ), 'text', [],
-            __( 'SMS.ir → numeric Template ID | Kavenegar → template name | FarazSMS → pattern_code | MeliPayamak → bodyId', 'upsn' )
+            __( 'کد پترن / شناسه قالب', 'upsn' ), 'text', [],
+            __( 'SMS.ir → شناسه عددی قالب | Kavenegar → نام قالب | FarazSMS → pattern_code | MeliPayamak → bodyId', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_param_name',
-            __( 'Product Parameter Name', 'upsn' ), 'text', [],
-            __( 'The variable name in your template that receives the product name. SMS.ir/FarazSMS → parameter name | Kavenegar → token key (e.g. "token"). Not used by MeliPayamak.', 'upsn' )
+            __( 'نام پارامتر محصول', 'upsn' ), 'text', [],
+            __( 'نام متغیر در قالب پیامک که نام محصول را دریافت می‌کند. SMS.ir/FarazSMS → نام پارامتر | Kavenegar → کلید توکن (مثلاً "token"). برای MeliPayamak استفاده نمی‌شود.', 'upsn' )
         );
     }
 
@@ -303,12 +303,12 @@ class UPSN_Settings {
     public static function render_page(): void {
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'SMS Notify Settings', 'upsn' ); ?></h1>
+            <h1><?php esc_html_e( 'تنظیمات اطلاع‌رسانی پیامکی', 'upsn' ); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields( 'upsn_settings_group' );
                 do_settings_sections( 'upsn-settings' );
-                submit_button( __( 'Save Settings', 'upsn' ) );
+                submit_button( __( 'ذخیره تنظیمات', 'upsn' ) );
                 ?>
             </form>
         </div>

@@ -12,12 +12,45 @@ class UPSN_Admin_Panel {
     public static function register_menu(): void {
         add_submenu_page(
             'woocommerce',
-            __( 'SMS Notify Requests', 'upsn' ),
-            __( 'SMS Notify Requests', 'upsn' ),
+            __( 'درخواست‌های اطلاع‌رسانی', 'upsn' ),
+            __( 'درخواست‌های اطلاع‌رسانی', 'upsn' ),
             'manage_woocommerce',
             'upsn-requests',
             [ __CLASS__, 'render_page' ]
         );
+    }
+
+    public static function jalali_date( string $datetime ): string {
+        $ts = strtotime( $datetime );
+        if ( ! $ts ) {
+            return '—';
+        }
+        [ $gy, $gm, $gd ] = explode( '-', date( 'Y-m-d', $ts ) );
+        [ $jy, $jm, $jd ] = self::gregorian_to_jalali( (int) $gy, (int) $gm, (int) $gd );
+        $time = date( 'H:i', $ts );
+        return sprintf( '%04d/%02d/%02d %s', $jy, $jm, $jd, $time );
+    }
+
+    private static function gregorian_to_jalali( int $gy, int $gm, int $gd ): array {
+        $g_d_no = 365 * $gy + (int) ( ( $gy + 3 ) / 4 ) - (int) ( ( $gy + 99 ) / 100 ) + (int) ( ( $gy + 399 ) / 400 );
+        for ( $i = 0; $i < $gm - 1; $i++ ) {
+            $g_d_no += [ 31, 28 + ( ( $gy % 4 === 0 && $gy % 100 !== 0 ) || $gy % 400 === 0 ? 1 : 0 ), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ][ $i ];
+        }
+        $g_d_no += $gd - 1;
+        $j_d_no = $g_d_no - 79;
+        $j_np   = (int) ( $j_d_no / 12053 );
+        $j_d_no %= 12053;
+        $jy     = 979 + 33 * $j_np + 4 * (int) ( $j_d_no / 1461 );
+        $j_d_no %= 1461;
+        if ( $j_d_no >= 366 ) {
+            $jy     += (int) ( ( $j_d_no - 1 ) / 365 );
+            $j_d_no  = ( $j_d_no - 1 ) % 365;
+        }
+        $j_mi = [ 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 ];
+        for ( $i = 0; $i < 11 && $j_d_no >= $j_mi[ $i ]; $i++ ) {
+            $j_d_no -= $j_mi[ $i ];
+        }
+        return [ $jy, $i + 1, $j_d_no + 1 ];
     }
 
     public static function enqueue_styles( string $hook ): void {
@@ -53,7 +86,7 @@ class UPSN_Admin_Panel {
 
     public static function handle_bulk_action(): void {
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
-            wp_die( esc_html__( 'Unauthorized', 'upsn' ) );
+            wp_die( esc_html__( 'دسترسی غیرمجاز', 'upsn' ) );
         }
 
         check_admin_referer( 'upsn_bulk_action' );

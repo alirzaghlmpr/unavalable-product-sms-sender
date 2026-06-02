@@ -1,11 +1,11 @@
 <?php defined( 'ABSPATH' ) || exit; ?>
 
 <div class="wrap upsn-admin">
-    <h1><?php esc_html_e( 'SMS Notify Requests', 'upsn' ); ?></h1>
+    <h1><?php esc_html_e( 'درخواست‌های اطلاع‌رسانی پیامکی', 'upsn' ); ?></h1>
 
     <?php if ( isset( $_GET['upsn_notice'] ) && $_GET['upsn_notice'] === 'bulk_done' ) : ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php esc_html_e( 'Bulk action applied. Selected requests have been reset to pending.', 'upsn' ); ?></p>
+            <p><?php esc_html_e( 'عملیات انبوه اعمال شد. درخواست‌های انتخاب‌شده به وضعیت در انتظار بازگشتند.', 'upsn' ); ?></p>
         </div>
     <?php endif; ?>
 
@@ -14,10 +14,10 @@
         <?php
         $base_url = admin_url( 'admin.php?page=upsn-requests' );
         $filters  = [
-            ''         => __( 'All', 'upsn' ),
-            'pending'  => __( 'Pending', 'upsn' ),
-            'notified' => __( 'Notified', 'upsn' ),
-            'failed'   => __( 'Failed', 'upsn' ),
+            ''         => __( 'همه', 'upsn' ),
+            'pending'  => __( 'در انتظار', 'upsn' ),
+            'notified' => __( 'ارسال شد', 'upsn' ),
+            'failed'   => __( 'ناموفق', 'upsn' ),
         ];
         $count_map = [
             ''         => $counts['all'],
@@ -48,10 +48,10 @@
         <div class="tablenav top">
             <div class="alignleft actions bulkactions">
                 <select name="bulk_action">
-                    <option value=""><?php esc_html_e( '— Bulk Actions —', 'upsn' ); ?></option>
-                    <option value="resend"><?php esc_html_e( 'Re-queue for SMS (reset to pending)', 'upsn' ); ?></option>
+                    <option value=""><?php esc_html_e( '— عملیات انبوه —', 'upsn' ); ?></option>
+                    <option value="resend"><?php esc_html_e( 'ارسال مجدد (بازگشت به در انتظار)', 'upsn' ); ?></option>
                 </select>
-                <button type="submit" class="button action"><?php esc_html_e( 'Apply', 'upsn' ); ?></button>
+                <button type="submit" class="button action"><?php esc_html_e( 'اعمال', 'upsn' ); ?></button>
             </div>
         </div>
 
@@ -59,23 +59,30 @@
             <thead>
                 <tr>
                     <th class="check-column"><input type="checkbox" id="upsn-check-all" /></th>
-                    <th><?php esc_html_e( 'Product', 'upsn' ); ?></th>
-                    <th><?php esc_html_e( 'Phone', 'upsn' ); ?></th>
-                    <th><?php esc_html_e( 'Status', 'upsn' ); ?></th>
-                    <th><?php esc_html_e( 'Requested', 'upsn' ); ?></th>
-                    <th><?php esc_html_e( 'Notified At', 'upsn' ); ?></th>
+                    <th><?php esc_html_e( 'محصول', 'upsn' ); ?></th>
+                    <th><?php esc_html_e( 'شماره موبایل', 'upsn' ); ?></th>
+                    <th><?php esc_html_e( 'وضعیت', 'upsn' ); ?></th>
+                    <th><?php esc_html_e( 'تاریخ درخواست', 'upsn' ); ?></th>
+                    <th><?php esc_html_e( 'تاریخ ارسال', 'upsn' ); ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ( empty( $rows ) ) : ?>
                     <tr>
-                        <td colspan="6"><?php esc_html_e( 'No requests found.', 'upsn' ); ?></td>
+                        <td colspan="6"><?php esc_html_e( 'درخواستی یافت نشد.', 'upsn' ); ?></td>
                     </tr>
                 <?php else : ?>
-                    <?php foreach ( $rows as $row ) :
+                    <?php
+                    $status_labels = [
+                        'pending'  => 'در انتظار',
+                        'notified' => 'ارسال شد',
+                        'failed'   => 'ناموفق',
+                    ];
+                    foreach ( $rows as $row ) :
                         $product      = wc_get_product( $row->product_id );
-                        $product_name = $product ? $product->get_name() : __( '(Deleted)', 'upsn' );
+                        $product_name = $product ? $product->get_name() : __( '(حذف شده)', 'upsn' );
                         $product_url  = $product ? get_edit_post_link( $row->product_id ) : '#';
+                        $status_label = $status_labels[ $row->status ] ?? $row->status;
                     ?>
                         <tr>
                             <td class="check-column">
@@ -90,12 +97,12 @@
                             <td><?php echo esc_html( $row->phone ); ?></td>
                             <td>
                                 <span class="upsn-badge upsn-badge--<?php echo esc_attr( $row->status ); ?>">
-                                    <?php echo esc_html( ucfirst( $row->status ) ); ?>
+                                    <?php echo esc_html( $status_label ); ?>
                                 </span>
                             </td>
-                            <td><?php echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $row->requested_at ) ) ); ?></td>
+                            <td><?php echo esc_html( UPSN_Admin_Panel::jalali_date( $row->requested_at ) ); ?></td>
                             <td><?php echo $row->notified_at
-                                ? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $row->notified_at ) ) )
+                                ? esc_html( UPSN_Admin_Panel::jalali_date( $row->notified_at ) )
                                 : '—'; ?>
                             </td>
                         </tr>
