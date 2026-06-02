@@ -32,15 +32,20 @@ class UPSN_Admin_Panel {
     }
 
     private static function gregorian_to_jalali( int $gy, int $gm, int $gd ): array {
-        $g_d_no = 365 * $gy + (int) ( ( $gy + 3 ) / 4 ) - (int) ( ( $gy + 99 ) / 100 ) + (int) ( ( $gy + 399 ) / 400 );
-        for ( $i = 0; $i < $gm - 1; $i++ ) {
-            $g_d_no += [ 31, 28 + ( ( $gy % 4 === 0 && $gy % 100 !== 0 ) || $gy % 400 === 0 ? 1 : 0 ), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ][ $i ];
+        $g_y    = $gy - 1600;
+        $g_m    = $gm - 1;
+        $g_d    = $gd - 1;
+        $leap   = ( $gy % 4 === 0 && $gy % 100 !== 0 ) || $gy % 400 === 0 ? 1 : 0;
+        $g_d_no = 365 * $g_y + (int) ( ( $g_y + 3 ) / 4 ) - (int) ( ( $g_y + 99 ) / 100 ) + (int) ( ( $g_y + 399 ) / 400 );
+        $months = [ 31, 28 + $leap, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
+        for ( $i = 0; $i < $g_m; $i++ ) {
+            $g_d_no += $months[ $i ];
         }
-        $g_d_no += $gd - 1;
-        $j_d_no = $g_d_no - 79;
-        $j_np   = (int) ( $j_d_no / 12053 );
+        $g_d_no += $g_d;
+        $j_d_no  = $g_d_no - 79;
+        $j_np    = (int) ( $j_d_no / 12053 );
         $j_d_no %= 12053;
-        $jy     = 979 + 33 * $j_np + 4 * (int) ( $j_d_no / 1461 );
+        $jy      = 979 + 33 * $j_np + 4 * (int) ( $j_d_no / 1461 );
         $j_d_no %= 1461;
         if ( $j_d_no >= 366 ) {
             $jy     += (int) ( ( $j_d_no - 1 ) / 365 );
