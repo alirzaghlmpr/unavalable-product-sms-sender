@@ -178,10 +178,11 @@
                     submitBtn.textContent = originalSubmitLabel;
 
                     var code = response.data && response.data.code;
-                    showMessage(
-                        code === 'already_registered' ? upsnData.i18n.alreadyDone : upsnData.i18n.error,
-                        'error'
-                    );
+                    var msg  = upsnData.i18n.error;
+                    if      (code === 'already_registered') msg = upsnData.i18n.alreadyDone;
+                    else if (code === 'ip_limit')           msg = upsnData.i18n.ipLimit;
+                    else if (code === 'phone_limit')        msg = upsnData.i18n.phoneLimit;
+                    showMessage( msg, 'error' );
                 },
                 error: function () {
                     submitBtn.disabled    = false;

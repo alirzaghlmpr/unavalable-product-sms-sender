@@ -22,6 +22,8 @@ class UPSN_Settings {
             'modal_title'       => 'Notify Me When Available',
             'modal_subtitle'    => 'Enter your phone number and we will send you an SMS as soon as this product is back in stock.',
             'modal_text_dir'    => 'ltr',
+            'phone_label'       => 'Phone Number',
+            'sending_label'     => 'Please wait…',
             'submit_label'      => 'Notify Me',
             // Modal style
             'overlay_opacity'   => '55',
@@ -37,6 +39,9 @@ class UPSN_Settings {
             'success_message'   => 'You will be notified via SMS when this product is back in stock.',
             'success_color'     => '#1a7b4b',
             'error_color'       => '#cc1818',
+            // Anti-spam
+            'spam_ip_limit'     => '5',
+            'spam_phone_limit'  => '3',
             // SMS Provider
             'sms_gateway'    => 'smsir',
             'sms_api_key'    => '',
@@ -82,9 +87,13 @@ class UPSN_Settings {
 
         // Modal content
         add_settings_section( 'upsn_modal_content', __( 'Popup Content', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_modal_content', 'modal_title',    __( 'Popup Title', 'upsn' ),       'text'     );
-        self::field( 'upsn_modal_content', 'modal_subtitle', __( 'Popup Subtitle', 'upsn' ),    'textarea' );
-        self::field( 'upsn_modal_content', 'modal_text_dir', __( 'Text Direction', 'upsn' ),    'select',
+        self::field( 'upsn_modal_content', 'modal_title',    __( 'Popup Title', 'upsn' ),         'text'     );
+        self::field( 'upsn_modal_content', 'modal_subtitle', __( 'Popup Subtitle', 'upsn' ),      'textarea' );
+        self::field( 'upsn_modal_content', 'phone_label',    __( 'Phone Field Label', 'upsn' ),   'text'     );
+        self::field( 'upsn_modal_content', 'sending_label',  __( 'Sending Button Text', 'upsn' ), 'text',    [],
+            __( 'Button text shown while the request is being submitted.', 'upsn' )
+        );
+        self::field( 'upsn_modal_content', 'modal_text_dir', __( 'Text Direction', 'upsn' ),      'select',
             [ 'ltr' => __( 'LTR (Left to Right)', 'upsn' ), 'rtl' => __( 'RTL (Right to Left)', 'upsn' ) ]
         );
 
@@ -107,6 +116,17 @@ class UPSN_Settings {
         self::field( 'upsn_msg', 'success_message', __( 'Success Message Text', 'upsn' ), 'text'  );
         self::field( 'upsn_msg', 'success_color',   __( 'Success Text Color', 'upsn' ),   'color' );
         self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
+
+        // Anti-spam
+        add_settings_section( 'upsn_spam', __( 'Anti-Spam', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_spam', 'spam_ip_limit',
+            __( 'Max Requests per IP / Hour', 'upsn' ), 'number', [],
+            __( 'Block an IP after this many submissions per hour. Set to 0 to disable.', 'upsn' )
+        );
+        self::field( 'upsn_spam', 'spam_phone_limit',
+            __( 'Max Requests per Phone / Day', 'upsn' ), 'number', [],
+            __( 'Block a phone number after this many submissions across all products per day. Set to 0 to disable.', 'upsn' )
+        );
 
         // SMS Provider
         add_settings_section( 'upsn_sms', __( 'SMS Provider', 'upsn' ), '__return_false', 'upsn-settings' );
@@ -223,7 +243,7 @@ class UPSN_Settings {
         $defs  = self::defaults();
 
         $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
-        $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
+        $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius', 'spam_ip_limit', 'spam_phone_limit' ];
         $textarea_keys = [ 'modal_subtitle', 'success_message' ];
         $select_keys   = [
             'modal_text_dir' => [ 'ltr', 'rtl' ],

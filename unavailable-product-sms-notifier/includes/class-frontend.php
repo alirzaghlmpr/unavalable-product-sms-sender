@@ -44,9 +44,11 @@ class UPSN_Frontend {
             'i18n'       => [
                 'invalidPhone'  => __( 'Please enter a valid phone number.', 'upsn' ),
                 'alreadyDone'   => __( 'You have already registered for this product.', 'upsn' ),
+                'ipLimit'       => __( 'Too many requests from your location. Please try again later.', 'upsn' ),
+                'phoneLimit'    => __( 'This phone number has reached the maximum number of requests for today.', 'upsn' ),
                 'success'       => UPSN_Settings::get( 'success_message' ),
                 'error'         => __( 'Something went wrong. Please try again.', 'upsn' ),
-                'sending'       => __( 'Please wait…', 'upsn' ),
+                'sending'       => UPSN_Settings::get( 'sending_label' ),
             ],
         ] );
     }
@@ -70,7 +72,7 @@ class UPSN_Frontend {
                 <h2 id="upsn-modal-title"><?php echo esc_html( UPSN_Settings::get( 'modal_title' ) ); ?></h2>
                 <p><?php echo esc_html( UPSN_Settings::get( 'modal_subtitle' ) ); ?></p>
                 <form id="upsn-form" novalidate>
-                    <label for="upsn-phone"><?php esc_html_e( 'Phone Number', 'upsn' ); ?></label>
+                    <label for="upsn-phone"><?php echo esc_html( UPSN_Settings::get( 'phone_label' ) ); ?></label>
                     <input
                         type="tel"
                         id="upsn-phone"

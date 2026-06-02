@@ -23,8 +23,19 @@ class UPSN_Request_Handler {
             wp_send_json_error( [ 'code' => 'product_unavailable' ], 400 );
         }
 
+        // ── Anti-spam: IP check ────────────────────────────────────────────
+        if ( self::is_ip_over_limit() ) {
+            wp_send_json_error( [ 'code' => 'ip_limit' ], 429 );
+        }
+
         $phone = self::normalize_phone( $phone_raw );
 
+        // ── Anti-spam: phone check ─────────────────────────────────────────
+        if ( self::is_phone_over_limit( $phone ) ) {
+            wp_send_json_error( [ 'code' => 'phone_limit' ], 429 );
+        }
+
+        // ── Duplicate check ────────────────────────────────────────────────
         if ( UPSN_Database::exists( $product_id, $phone ) ) {
             wp_send_json_error( [ 'code' => 'already_registered' ], 409 );
         }
@@ -33,24 +44,123 @@ class UPSN_Request_Handler {
             wp_send_json_error( [ 'code' => 'db_error' ], 500 );
         }
 
+        // Increment counters only after a successful insert
+        self::increment_ip_counter();
+        self::increment_phone_counter( $phone );
+
         wp_send_json_success( [ 'code' => 'registered' ] );
     }
 
-    /**
-     * Phase 1: validates Iranian mobile numbers (09xxxxxxxxx or +989xxxxxxxxx).
-     * Phase 2: swap regex for the pattern from the SMS provider docs.
-     */
+    // ── Phone validation ───────────────────────────────────────────────────────
     private static function is_valid_phone( string $phone ): bool {
-        // Accepts: 09xxxxxxxxx | 9xxxxxxxxx | +989xxxxxxxxx | 00989xxxxxxxxx
         return (bool) preg_match( '/^(\+98|0098|0)?9[0-9]{9}$/', $phone );
     }
 
-    /** Normalize to 09xxxxxxxxx local format for storage */
     private static function normalize_phone( string $phone ): string {
         $phone = preg_replace( '/^\+98|^0098/', '0', $phone );
         if ( str_starts_with( $phone, '9' ) ) {
             $phone = '0' . $phone;
         }
         return $phone;
+    }
+
+    // ── Rate limiting ──────────────────────────────────────────────────────────
+
+    private static function get_client_ip(): string {
+        $candidates = [
+            'HTTP_CF_CONNECTING_IP',  // Cloudflare
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_REAL_IP',
+            'REMOTE_ADDR',
+        ];
+
+        foreach ( $candidates as $key ) {
+            if ( empty( $_SERVER[ $key ] ) ) {
+                continue;
+            }
+            // X-Forwarded-For can be a comma-separated list; take the first
+            $ip = trim( explode( ',', $_SERVER[ $key ] )[0] );
+            if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+                return $ip;
+            }
+        }
+
+        // Fallback: accept any valid IP including private (dev environments)
+        foreach ( $candidates as $key ) {
+            if ( ! empty( $_SERVER[ $key ] ) ) {
+                $ip = trim( explode( ',', $_SERVER[ $key ] )[0] );
+                if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+                    return $ip;
+                }
+            }
+        }
+
+        return '0.0.0.0';
+    }
+
+    private static function ip_transient_key(): string {
+        return 'upsn_rl_ip_' . md5( self::get_client_ip() );
+    }
+
+    private static function phone_transient_key( string $phone ): string {
+        return 'upsn_rl_ph_' . md5( $phone );
+    }
+
+    private static function is_ip_over_limit(): bool {
+        $limit = (int) UPSN_Settings::get( 'spam_ip_limit', 5 );
+        if ( $limit <= 0 ) {
+            return false;
+        }
+        return (int) get_transient( self::ip_transient_key() ) >= $limit;
+    }
+
+    private static function is_phone_over_limit( string $phone ): bool {
+        $limit = (int) UPSN_Settings::get( 'spam_phone_limit', 3 );
+        if ( $limit <= 0 ) {
+            return false;
+        }
+        return (int) get_transient( self::phone_transient_key( $phone ) ) >= $limit;
+    }
+
+    private static function increment_ip_counter(): void {
+        $limit = (int) UPSN_Settings::get( 'spam_ip_limit', 5 );
+        if ( $limit <= 0 ) {
+            return;
+        }
+        $key   = self::ip_transient_key();
+        $count = (int) get_transient( $key );
+        // set_transient refreshes the TTL only on first set; use a fixed window
+        if ( $count === 0 ) {
+            set_transient( $key, 1, HOUR_IN_SECONDS );
+        } else {
+            // Update value without extending the window
+            global $wpdb;
+            $wpdb->query(
+                $wpdb->prepare(
+                    "UPDATE {$wpdb->options} SET option_value = option_value + 1 WHERE option_name = %s",
+                    '_transient_' . $key
+                )
+            );
+        }
+    }
+
+    private static function increment_phone_counter( string $phone ): void {
+        $limit = (int) UPSN_Settings::get( 'spam_phone_limit', 3 );
+        if ( $limit <= 0 ) {
+            return;
+        }
+        $key   = self::phone_transient_key( $phone );
+        $count = (int) get_transient( $key );
+        if ( $count === 0 ) {
+            set_transient( $key, 1, DAY_IN_SECONDS );
+        } else {
+            global $wpdb;
+            $wpdb->query(
+                $wpdb->prepare(
+                    "UPDATE {$wpdb->options} SET option_value = option_value + 1 WHERE option_name = %s",
+                    '_transient_' . $key
+                )
+            );
+        }
     }
 }
