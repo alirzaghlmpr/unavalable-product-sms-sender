@@ -51,6 +51,7 @@ function upsn_init() {
     }
 
     require_once UPSN_PATH . 'includes/class-database.php';
+    require_once UPSN_PATH . 'includes/gateways/class-gateway-base.php';
     require_once UPSN_PATH . 'includes/class-sms-sender.php';
     require_once UPSN_PATH . 'includes/class-frontend.php';
     require_once UPSN_PATH . 'includes/class-request-handler.php';

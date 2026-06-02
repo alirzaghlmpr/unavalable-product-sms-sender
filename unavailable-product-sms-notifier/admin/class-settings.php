@@ -38,9 +38,13 @@ class UPSN_Settings {
             'success_color'     => '#1a7b4b',
             'error_color'       => '#cc1818',
             // SMS Provider
-            'sms_api_key'       => '',
-            'sms_template_id'   => '',
-            'sms_param_name'    => 'product',
+            'sms_gateway'    => 'smsir',
+            'sms_api_key'    => '',
+            'sms_username'   => '',
+            'sms_password'   => '',
+            'sms_line_number'=> '',
+            'sms_pattern'    => '',
+            'sms_param_name' => 'product',
         ];
     }
 
@@ -105,24 +109,36 @@ class UPSN_Settings {
         self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
 
         // SMS Provider
-        add_settings_section( 'upsn_sms', __( 'SMS Provider (sms.ir)', 'upsn' ), '__return_false', 'upsn-settings' );
+        add_settings_section( 'upsn_sms', __( 'SMS Provider', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_sms', 'sms_gateway', __( 'Gateway', 'upsn' ), 'select', [
+            'smsir'       => 'SMS.ir',
+            'kavenegar'   => 'Kavenegar',
+            'farazsms'    => 'FarazSMS',
+            'melipayamak' => 'MeliPayamak',
+        ] );
         self::field( 'upsn_sms', 'sms_api_key',
-            __( 'API Key', 'upsn' ),
-            'password',
-            [],
-            __( 'Your x-api-key from sms.ir dashboard.', 'upsn' )
+            __( 'API Key', 'upsn' ), 'password', [],
+            __( 'SMS.ir → X-API-KEY | Kavenegar → API Key', 'upsn' )
         );
-        self::field( 'upsn_sms', 'sms_template_id',
-            __( 'Template ID', 'upsn' ),
-            'text',
-            [],
-            __( 'The numeric ID of the verify template you created in sms.ir.', 'upsn' )
+        self::field( 'upsn_sms', 'sms_username',
+            __( 'Username', 'upsn' ), 'text', [],
+            __( 'FarazSMS | MeliPayamak', 'upsn' )
+        );
+        self::field( 'upsn_sms', 'sms_password',
+            __( 'Password', 'upsn' ), 'password', [],
+            __( 'FarazSMS | MeliPayamak', 'upsn' )
+        );
+        self::field( 'upsn_sms', 'sms_line_number',
+            __( 'Line Number', 'upsn' ), 'text', [],
+            __( 'FarazSMS only — your dedicated sender line.', 'upsn' )
+        );
+        self::field( 'upsn_sms', 'sms_pattern',
+            __( 'Pattern / Template ID', 'upsn' ), 'text', [],
+            __( 'SMS.ir → numeric Template ID | Kavenegar → template name | FarazSMS → pattern_code | MeliPayamak → bodyId', 'upsn' )
         );
         self::field( 'upsn_sms', 'sms_param_name',
-            __( 'Product Parameter Name', 'upsn' ),
-            'text',
-            [],
-            __( 'The parameter name defined in your sms.ir template that receives the product name (e.g. "product").', 'upsn' )
+            __( 'Product Parameter Name', 'upsn' ), 'text', [],
+            __( 'The variable name in your template that receives the product name. SMS.ir/FarazSMS → parameter name | Kavenegar → token key (e.g. "token"). Not used by MeliPayamak.', 'upsn' )
         );
     }
 
@@ -145,41 +161,39 @@ class UPSN_Settings {
         $options = $args['options'] ?? [];
         $desc    = $args['desc']    ?? '';
 
+        $id = 'upsn-field-' . esc_attr( $key );
+
         switch ( $type ) {
             case 'color':
                 printf(
-                    '<input type="color" name="%s" value="%s" style="height:36px;width:60px;cursor:pointer;border:1px solid #ccc;border-radius:4px;padding:2px;" />',
-                    esc_attr( $name ),
-                    esc_attr( $value )
+                    '<input type="color" id="%s" name="%s" value="%s" style="height:36px;width:60px;cursor:pointer;border:1px solid #ccc;border-radius:4px;padding:2px;" />',
+                    $id, esc_attr( $name ), esc_attr( $value )
                 );
                 break;
 
             case 'number':
                 printf(
-                    '<input type="number" name="%s" value="%s" min="0" max="100" style="width:72px;" />',
-                    esc_attr( $name ),
-                    esc_attr( $value )
+                    '<input type="number" id="%s" name="%s" value="%s" min="0" max="100" style="width:72px;" />',
+                    $id, esc_attr( $name ), esc_attr( $value )
                 );
                 break;
 
             case 'password':
                 printf(
-                    '<input type="password" name="%s" value="%s" style="width:100%%;max-width:420px;" autocomplete="off" />',
-                    esc_attr( $name ),
-                    esc_attr( $value )
+                    '<input type="password" id="%s" name="%s" value="%s" style="width:100%%;max-width:420px;" autocomplete="off" />',
+                    $id, esc_attr( $name ), esc_attr( $value )
                 );
                 break;
 
             case 'textarea':
                 printf(
-                    '<textarea name="%s" rows="3" style="width:100%%;max-width:420px;">%s</textarea>',
-                    esc_attr( $name ),
-                    esc_textarea( $value )
+                    '<textarea id="%s" name="%s" rows="3" style="width:100%%;max-width:420px;">%s</textarea>',
+                    $id, esc_attr( $name ), esc_textarea( $value )
                 );
                 break;
 
             case 'select':
-                $html = sprintf( '<select name="%s">', esc_attr( $name ) );
+                $html = sprintf( '<select id="%s" name="%s">', $id, esc_attr( $name ) );
                 foreach ( $options as $opt_val => $opt_label ) {
                     $html .= sprintf(
                         '<option value="%s"%s>%s</option>',
@@ -194,9 +208,8 @@ class UPSN_Settings {
 
             default:
                 printf(
-                    '<input type="text" name="%s" value="%s" style="width:100%%;max-width:420px;" />',
-                    esc_attr( $name ),
-                    esc_attr( $value )
+                    '<input type="text" id="%s" name="%s" value="%s" style="width:100%%;max-width:420px;" />',
+                    $id, esc_attr( $name ), esc_attr( $value )
                 );
         }
 
@@ -212,8 +225,12 @@ class UPSN_Settings {
         $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
         $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius' ];
         $textarea_keys = [ 'modal_subtitle', 'success_message' ];
-        $select_keys   = [ 'modal_text_dir' => [ 'ltr', 'rtl' ] ];
-        // sms_api_key and sms_template_id are intentionally allowed to be empty (not yet configured)
+        $select_keys   = [
+            'modal_text_dir' => [ 'ltr', 'rtl' ],
+            'sms_gateway'    => [ 'smsir', 'kavenegar', 'farazsms', 'melipayamak' ],
+        ];
+        // Credentials and pattern are intentionally allowed to be empty (not yet configured)
+        $allow_empty_keys = [ 'sms_api_key', 'sms_username', 'sms_password', 'sms_line_number', 'sms_pattern' ];
 
         foreach ( $defs as $key => $default ) {
             $raw = $input[ $key ] ?? '';
@@ -227,9 +244,8 @@ class UPSN_Settings {
             } elseif ( isset( $select_keys[ $key ] ) ) {
                 $clean[ $key ] = in_array( $raw, $select_keys[ $key ], true ) ? $raw : $default;
             } else {
-                $sanitized = sanitize_text_field( $raw );
-                // Allow intentionally empty fields (e.g. API key not yet set)
-                $allow_empty = in_array( $key, [ 'sms_api_key', 'sms_template_id' ], true );
+                $sanitized     = sanitize_text_field( $raw );
+                $allow_empty   = in_array( $key, $allow_empty_keys, true );
                 $clean[ $key ] = ( $sanitized === '' && ! $allow_empty ) ? $default : $sanitized;
             }
         }
@@ -250,6 +266,29 @@ class UPSN_Settings {
                 ?>
             </form>
         </div>
+        <script>
+        jQuery(function ($) {
+            // Fields visible per gateway: field_key → [gateways that need it]
+            var visibility = {
+                sms_api_key:     ['smsir', 'kavenegar'],
+                sms_username:    ['farazsms', 'melipayamak'],
+                sms_password:    ['farazsms', 'melipayamak'],
+                sms_line_number: ['farazsms'],
+                sms_param_name:  ['smsir', 'kavenegar', 'farazsms'],
+            };
+
+            function applyVisibility() {
+                var gw = $('#upsn-field-sms_gateway').val();
+                $.each(visibility, function (fieldKey, gateways) {
+                    var $tr = $('#upsn-field-' + fieldKey).closest('tr');
+                    $tr.toggle(gateways.indexOf(gw) !== -1);
+                });
+            }
+
+            $('#upsn-field-sms_gateway').on('change', applyVisibility);
+            applyVisibility();
+        });
+        </script>
         <?php
     }
 

@@ -3,62 +3,67 @@ defined( 'ABSPATH' ) || exit;
 
 class UPSN_SMS_Sender {
 
-    const API_ENDPOINT = 'https://api.sms.ir/v1/send/verify';
+    private static array $gateway_map = [
+        'smsir'       => [ 'class' => 'UPSN_Gateway_SMSIR',       'file' => 'class-gateway-smsir.php' ],
+        'kavenegar'   => [ 'class' => 'UPSN_Gateway_Kavenegar',   'file' => 'class-gateway-kavenegar.php' ],
+        'farazsms'    => [ 'class' => 'UPSN_Gateway_FarazSMS',    'file' => 'class-gateway-farazsms.php' ],
+        'melipayamak' => [ 'class' => 'UPSN_Gateway_MeliPayamak', 'file' => 'class-gateway-melipayamak.php' ],
+    ];
 
     public static function send( string $phone, int $product_id ): bool {
-        $api_key     = UPSN_Settings::get( 'sms_api_key' );
-        $template_id = UPSN_Settings::get( 'sms_template_id' );
-        $param_name  = UPSN_Settings::get( 'sms_param_name' );
+        $gateway_key = UPSN_Settings::get( 'sms_gateway', 'smsir' );
+        $pattern     = UPSN_Settings::get( 'sms_pattern' );
+        $param_name  = UPSN_Settings::get( 'sms_param_name', 'product' );
 
-        if ( ! $api_key || ! $template_id ) {
-            error_log( '[UPSN] SMS skipped: API key or template ID not configured.' );
+        if ( ! $pattern ) {
+            error_log( '[UPSN] SMS skipped: pattern / template ID not configured.' );
             return false;
         }
 
         $product      = wc_get_product( $product_id );
         $product_name = $product ? $product->get_name() : "#{$product_id}";
 
-        $response = wp_remote_post(
-            self::API_ENDPOINT,
-            [
-                'timeout'     => 15,
-                'redirection' => 5,
-                'headers'     => [
-                    'Content-Type' => 'application/json',
-                    'Accept'       => 'text/plain',
-                    'x-api-key'    => $api_key,
-                ],
-                'body' => wp_json_encode( [
-                    'mobile'     => $phone,
-                    'templateId' => (int) $template_id,
-                    'parameters' => [
-                        [ 'name' => $param_name, 'value' => $product_name ],
-                    ],
-                ] ),
-            ]
-        );
+        // All gateways receive variables as a key-value array.
+        // SMS.ir  → converts each pair to {name, value} objects
+        // Kavenegar → appends each pair as query param (e.g. token=value)
+        // FarazSMS → passes as input_data JSON
+        // MeliPayamak → implodes values with ";"
+        $variables = [ $param_name => $product_name ];
 
-        if ( is_wp_error( $response ) ) {
-            error_log( '[UPSN] SMS request error: ' . $response->get_error_message() );
+        $gateway = self::make_gateway( $gateway_key );
+        if ( ! $gateway ) {
+            error_log( "[UPSN] SMS skipped: unknown or misconfigured gateway '{$gateway_key}'." );
             return false;
         }
 
-        $http_code = (int) wp_remote_retrieve_response_code( $response );
-        $raw_body  = wp_remote_retrieve_body( $response );
-        $body      = json_decode( $raw_body, true );
+        $result = $gateway->send_sms( $phone, $variables, $pattern );
+        return (bool) $result->success;
+    }
 
-        if ( $http_code === 200 && isset( $body['status'] ) && (int) $body['status'] === 1 ) {
-            return true;
+    private static function make_gateway( string $key ): ?UPSN_SMS_Gateway {
+        if ( ! isset( self::$gateway_map[ $key ] ) ) {
+            return null;
         }
 
-        error_log( sprintf(
-            '[UPSN] SMS failed — HTTP %d | to: %s | product: %s | response: %s',
-            $http_code,
-            $phone,
-            $product_name,
-            $raw_body
-        ) );
+        $entry = self::$gateway_map[ $key ];
+        $file  = UPSN_PATH . 'includes/gateways/' . $entry['file'];
 
-        return false;
+        if ( ! file_exists( $file ) ) {
+            error_log( "[UPSN] Gateway file not found: {$file}" );
+            return null;
+        }
+
+        require_once $file;
+
+        $config = [
+            'api_key'     => UPSN_Settings::get( 'sms_api_key' ),
+            'username'    => UPSN_Settings::get( 'sms_username' ),
+            'password'    => UPSN_Settings::get( 'sms_password' ),
+            'line_number' => UPSN_Settings::get( 'sms_line_number' ),
+            'param_name'  => UPSN_Settings::get( 'sms_param_name', 'product' ),
+        ];
+
+        $class = $entry['class'];
+        return new $class( $config );
     }
 }
