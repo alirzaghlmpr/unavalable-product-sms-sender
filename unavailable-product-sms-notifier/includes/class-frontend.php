@@ -42,12 +42,12 @@ class UPSN_Frontend {
             'nonce'      => wp_create_nonce( 'upsn_notify' ),
             'productId'  => get_the_ID(),
             'i18n'       => [
-                'invalidPhone'  => __( 'Please enter a valid phone number.', 'upsn' ),
-                'alreadyDone'   => __( 'You have already registered for this product.', 'upsn' ),
-                'ipLimit'       => __( 'Too many requests from your location. Please try again later.', 'upsn' ),
-                'phoneLimit'    => __( 'This phone number has reached the maximum number of requests for today.', 'upsn' ),
+                'invalidPhone'  => UPSN_Settings::get( 'invalid_phone_error' ),
+                'alreadyDone'   => UPSN_Settings::get( 'already_registered_error' ),
+                'ipLimit'       => UPSN_Settings::get( 'ip_limit_error' ),
+                'phoneLimit'    => UPSN_Settings::get( 'phone_limit_error' ),
                 'success'       => UPSN_Settings::get( 'success_message' ),
-                'error'         => __( 'Something went wrong. Please try again.', 'upsn' ),
+                'error'         => UPSN_Settings::get( 'generic_error' ),
                 'sending'       => UPSN_Settings::get( 'sending_label' ),
             ],
         ] );

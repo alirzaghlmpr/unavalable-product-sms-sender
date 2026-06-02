@@ -36,9 +36,14 @@ class UPSN_Settings {
             'submit_color'      => '#ffffff',
             'submit_radius'     => '4',
             // Messages
-            'success_message'   => 'You will be notified via SMS when this product is back in stock.',
-            'success_color'     => '#1a7b4b',
-            'error_color'       => '#cc1818',
+            'success_message'       => 'You will be notified via SMS when this product is back in stock.',
+            'success_color'         => '#1a7b4b',
+            'error_color'           => '#cc1818',
+            'invalid_phone_error'   => 'Please enter a valid phone number.',
+            'already_registered_error' => 'You have already registered for this product.',
+            'ip_limit_error'        => 'Too many requests from your location. Please try again later.',
+            'phone_limit_error'     => 'This phone number has reached the maximum number of requests for today.',
+            'generic_error'         => 'Something went wrong. Please try again.',
             // Anti-spam
             'spam_ip_limit'     => '5',
             'spam_phone_limit'  => '3',
@@ -112,10 +117,31 @@ class UPSN_Settings {
         self::field( 'upsn_form', 'submit_radius',  __( 'Submit Border Radius (px)', 'upsn' ),   'number' );
 
         // Messages
-        add_settings_section( 'upsn_msg', __( 'Messages', 'upsn' ), '__return_false', 'upsn-settings' );
-        self::field( 'upsn_msg', 'success_message', __( 'Success Message Text', 'upsn' ), 'text'  );
+        add_settings_section( 'upsn_msg', __( 'Messages & Errors', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_msg', 'success_message', __( 'Success Message', 'upsn' ), 'text' );
         self::field( 'upsn_msg', 'success_color',   __( 'Success Text Color', 'upsn' ),   'color' );
         self::field( 'upsn_msg', 'error_color',     __( 'Error Text Color', 'upsn' ),     'color' );
+
+        self::field( 'upsn_msg', 'invalid_phone_error',
+            __( 'Invalid Phone Error', 'upsn' ), 'text', [],
+            __( 'Shown when the user enters an invalid phone number.', 'upsn' )
+        );
+        self::field( 'upsn_msg', 'already_registered_error',
+            __( 'Already Registered Error', 'upsn' ), 'text', [],
+            __( 'Shown when the phone number is already registered for this product.', 'upsn' )
+        );
+        self::field( 'upsn_msg', 'ip_limit_error',
+            __( 'IP Rate Limit Error', 'upsn' ), 'text', [],
+            __( 'Shown when the IP has exceeded the hourly request limit.', 'upsn' )
+        );
+        self::field( 'upsn_msg', 'phone_limit_error',
+            __( 'Phone Rate Limit Error', 'upsn' ), 'text', [],
+            __( 'Shown when the phone number has exceeded the daily request limit.', 'upsn' )
+        );
+        self::field( 'upsn_msg', 'generic_error',
+            __( 'Generic Error Message', 'upsn' ), 'text', [],
+            __( 'Shown for other errors (server issues, etc).', 'upsn' )
+        );
 
         // Anti-spam
         add_settings_section( 'upsn_spam', __( 'Anti-Spam', 'upsn' ), '__return_false', 'upsn-settings' );
