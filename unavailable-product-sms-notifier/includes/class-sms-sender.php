@@ -22,6 +22,9 @@ class UPSN_SMS_Sender {
 
         $product      = wc_get_product( $product_id );
         $product_name = $product ? $product->get_name() : "#{$product_id}";
+        if ( mb_strlen( $product_name ) > 24 ) {
+            $product_name = mb_substr( $product_name, 0, 21 ) . '...';
+        }
 
         // All gateways receive variables as a key-value array.
         // SMS.ir  → converts each pair to {name, value} objects
