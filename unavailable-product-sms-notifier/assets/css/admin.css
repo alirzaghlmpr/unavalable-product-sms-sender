@@ -5,26 +5,163 @@
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: 0.4px;
 }
 
-.upsn-badge--pending {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.upsn-badge--notified {
-    background: #d1e7dd;
-    color: #0a3622;
-}
-
-.upsn-badge--failed {
-    background: #f8d7da;
-    color: #58151c;
-}
+.upsn-badge--pending  { background: #fff3cd; color: #856404; }
+.upsn-badge--notified { background: #d1e7dd; color: #0a3622; }
+.upsn-badge--failed   { background: #f8d7da; color: #58151c; }
 
 /* ── Table tweaks ─────────────────────────────────────────────────────── */
-.upsn-admin .wp-list-table .check-column {
-    width: 2em;
+.upsn-admin .wp-list-table .check-column { width: 2em; }
+
+/* ── Delete link ──────────────────────────────────────────────────────── */
+.upsn-delete-link {
+    color: #cc1818;
+    text-decoration: none;
+    font-size: 12px;
+}
+.upsn-delete-link:hover { color: #8b0000; text-decoration: underline; }
+
+/* ── Filter bar ───────────────────────────────────────────────────────── */
+.upsn-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+.upsn-filter-input {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    font-size: 13px;
+}
+input.upsn-filter-input[type="text"] { min-width: 200px; }
+input.upsn-filter-input[type="date"] { min-width: 140px; }
+
+/* ── Summary cards ────────────────────────────────────────────────────── */
+.upsn-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+@media (max-width: 900px) { .upsn-cards { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px) { .upsn-cards { grid-template-columns: 1fr; } }
+
+.upsn-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    border-top-width: 4px;
+}
+.upsn-card--total    { border-top-color: #2271b1; }
+.upsn-card--pending  { border-top-color: #f0ad4e; }
+.upsn-card--notified { border-top-color: #1a7b4b; }
+.upsn-card--failed   { border-top-color: #cc1818; }
+
+.upsn-card__num {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1d2327;
+}
+.upsn-card__label {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* ── Stats grid ───────────────────────────────────────────────────────── */
+.upsn-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+@media (max-width: 900px) { .upsn-stats-grid { grid-template-columns: 1fr; } }
+
+.upsn-stats-box {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+}
+.upsn-stats-box h2 {
+    margin: 0 0 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+.upsn-stats-box--full { grid-column: 1 / -1; }
+
+/* ── Inline bar ───────────────────────────────────────────────────────── */
+.upsn-bar-wrap {
+    height: 4px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    margin-top: 5px;
+}
+.upsn-bar {
+    height: 100%;
+    border-radius: 2px;
+    min-width: 2px;
+}
+.upsn-bar--blue  { background: #2271b1; }
+.upsn-bar--green { background: #1a7b4b; }
+
+/* ── Daily chart ──────────────────────────────────────────────────────── */
+.upsn-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 160px;
+    padding-bottom: 24px;
+    overflow-x: auto;
+}
+.upsn-chart__col {
+    flex: 1;
+    min-width: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    position: relative;
+    cursor: default;
+}
+.upsn-chart__bar {
+    width: 100%;
+    background: #2271b1;
+    border-radius: 3px 3px 0 0;
+    min-height: 2px;
+    position: relative;
+    transition: background .15s;
+}
+.upsn-chart__col:hover .upsn-chart__bar { background: #135e96; }
+
+.upsn-chart__val {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #646970;
+    white-space: nowrap;
+    display: none;
+}
+.upsn-chart__col:hover .upsn-chart__val { display: block; }
+
+.upsn-chart__label {
+    font-size: 9px;
+    color: #646970;
+    margin-top: 4px;
+    white-space: nowrap;
+    position: absolute;
+    bottom: 0;
 }
