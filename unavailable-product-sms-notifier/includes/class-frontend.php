@@ -20,6 +20,10 @@ class UPSN_Frontend {
             return;
         }
 
+        if ( ! self::is_visible_for_product( $product ) ) {
+            return;
+        }
+
         wp_enqueue_style(
             'upsn-popup',
             UPSN_URL . 'assets/css/popup.css',
@@ -58,6 +62,10 @@ class UPSN_Frontend {
         if ( ! $product instanceof WC_Product || $product->is_in_stock() ) {
             return;
         }
+
+        if ( ! self::is_visible_for_product( $product ) ) {
+            return;
+        }
         ?>
         <div class="upsn-notify-wrap">
             <button type="button" id="upsn-open-btn" class="upsn-notify-btn">
@@ -91,5 +99,33 @@ class UPSN_Frontend {
             </div>
         </div>
         <?php
+    }
+
+    private static function is_visible_for_product( WC_Product $product ): bool {
+        $mode = UPSN_Settings::get( 'button_visibility', 'all' );
+
+        if ( $mode === 'all' ) {
+            return true;
+        }
+
+        $product_id = $product instanceof WC_Product_Variation
+            ? $product->get_parent_id()
+            : $product->get_id();
+
+        if ( $mode === 'products' ) {
+            $ids = array_filter( array_map( 'absint', explode( ',', UPSN_Settings::get( 'button_products', '' ) ) ) );
+            return in_array( $product_id, $ids, true );
+        }
+
+        if ( $mode === 'categories' ) {
+            $cat_ids = array_filter( array_map( 'absint', explode( ',', UPSN_Settings::get( 'button_categories', '' ) ) ) );
+            if ( empty( $cat_ids ) ) {
+                return false;
+            }
+            $product_cats = wc_get_product_term_ids( $product_id, 'product_cat' );
+            return ! empty( array_intersect( $cat_ids, $product_cats ) );
+        }
+
+        return true;
     }
 }

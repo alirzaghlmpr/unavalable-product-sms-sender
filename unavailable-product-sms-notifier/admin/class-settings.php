@@ -6,13 +6,26 @@ class UPSN_Settings {
     const OPTION_KEY = 'upsn_settings';
 
     public static function init(): void {
-        add_action( 'admin_menu',  [ __CLASS__, 'register_menu' ] );
-        add_action( 'admin_init',  [ __CLASS__, 'register_settings' ] );
+        add_action( 'admin_menu',            [ __CLASS__, 'register_menu' ] );
+        add_action( 'admin_init',            [ __CLASS__, 'register_settings' ] );
+        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
+    }
+
+    public static function enqueue_scripts( string $hook ): void {
+        if ( strpos( $hook, 'upsn-settings' ) === false ) {
+            return;
+        }
+        wp_enqueue_script( 'wc-enhanced-select' );
+        wp_enqueue_style( 'woocommerce_admin_styles' );
     }
 
     // ── Defaults ──────────────────────────────────────────────────────────────
     public static function defaults(): array {
         return [
+            // Visibility
+            'button_visibility'  => 'all',
+            'button_categories'  => '',
+            'button_products'    => '',
             // Button
             'button_label'      => 'اطلاع‌رسانی موجود شدن',
             'button_bg'         => '#2271b1',
@@ -81,6 +94,20 @@ class UPSN_Settings {
         register_setting( 'upsn_settings_group', self::OPTION_KEY, [
             'sanitize_callback' => [ __CLASS__, 'sanitize' ],
         ] );
+
+        // Visibility
+        add_settings_section( 'upsn_visibility', __( 'محدوده نمایش دکمه', 'upsn' ), '__return_false', 'upsn-settings' );
+        self::field( 'upsn_visibility', 'button_visibility', __( 'نمایش دکمه در', 'upsn' ), 'select', [
+            'all'        => __( 'همه محصولات ناموجود', 'upsn' ),
+            'categories' => __( 'دسته‌بندی‌های انتخابی', 'upsn' ),
+            'products'   => __( 'محصولات انتخابی', 'upsn' ),
+        ] );
+        self::field( 'upsn_visibility', 'button_categories', __( 'دسته‌بندی‌ها', 'upsn' ), 'product_cats', [],
+            __( 'دسته‌بندی‌هایی که دکمه در آن‌ها نمایش داده می‌شود.', 'upsn' )
+        );
+        self::field( 'upsn_visibility', 'button_products', __( 'محصولات', 'upsn' ), 'product_search', [],
+            __( 'محصولاتی که دکمه در آن‌ها نمایش داده می‌شود.', 'upsn' )
+        );
 
         // Button
         add_settings_section( 'upsn_btn',  __( 'دکمه اطلاع‌رسانی', 'upsn' ),  '__return_false', 'upsn-settings' );
@@ -252,6 +279,47 @@ class UPSN_Settings {
                 echo $html;
                 break;
 
+            case 'product_cats':
+                $cats     = get_terms( [ 'taxonomy' => 'product_cat', 'hide_empty' => false ] );
+                $selected = array_filter( array_map( 'absint', $value ? explode( ',', $value ) : [] ) );
+                $html     = sprintf(
+                    '<select id="%s" name="%s[]" multiple class="wc-enhanced-select" style="width:100%%;max-width:420px;">',
+                    $id, esc_attr( $name )
+                );
+                if ( ! is_wp_error( $cats ) ) {
+                    foreach ( $cats as $cat ) {
+                        $html .= sprintf(
+                            '<option value="%d"%s>%s</option>',
+                            $cat->term_id,
+                            in_array( $cat->term_id, $selected, true ) ? ' selected' : '',
+                            esc_html( $cat->name )
+                        );
+                    }
+                }
+                $html .= '</select>';
+                echo $html;
+                break;
+
+            case 'product_search':
+                $selected_ids = array_filter( array_map( 'absint', $value ? explode( ',', $value ) : [] ) );
+                $html = sprintf(
+                    '<select id="%s" name="%s[]" multiple class="wc-product-search" style="width:100%%;max-width:420px;" data-placeholder="%s" data-action="woocommerce_json_search_products_and_variations">',
+                    $id, esc_attr( $name ), esc_attr__( 'جستجوی محصول...', 'upsn' )
+                );
+                foreach ( $selected_ids as $pid ) {
+                    $p = wc_get_product( $pid );
+                    if ( $p ) {
+                        $html .= sprintf(
+                            '<option value="%d" selected>%s</option>',
+                            $pid,
+                            esc_html( $p->get_name() )
+                        );
+                    }
+                }
+                $html .= '</select>';
+                echo $html;
+                break;
+
             default:
                 printf(
                     '<input type="text" id="%s" name="%s" value="%s" style="width:100%%;max-width:420px;" />',
@@ -268,15 +336,22 @@ class UPSN_Settings {
         $clean = [];
         $defs  = self::defaults();
 
+        // Multi-select fields arrive as arrays — convert to comma-separated strings first
+        foreach ( [ 'button_categories', 'button_products' ] as $arr_key ) {
+            $raw_arr          = isset( $input[ $arr_key ] ) && is_array( $input[ $arr_key ] ) ? $input[ $arr_key ] : [];
+            $input[ $arr_key ] = implode( ',', array_filter( array_map( 'absint', $raw_arr ) ) );
+        }
+
         $color_keys    = [ 'button_bg', 'button_color', 'input_border', 'input_focus', 'submit_bg', 'submit_color', 'modal_bg', 'success_color', 'error_color' ];
         $number_keys   = [ 'button_radius', 'overlay_opacity', 'modal_radius', 'submit_radius', 'spam_ip_limit', 'spam_phone_limit' ];
         $textarea_keys = [ 'modal_subtitle', 'success_message' ];
         $select_keys   = [
-            'modal_text_dir' => [ 'ltr', 'rtl' ],
-            'sms_gateway'    => [ 'smsir', 'kavenegar', 'farazsms', 'melipayamak' ],
+            'button_visibility' => [ 'all', 'categories', 'products' ],
+            'modal_text_dir'    => [ 'ltr', 'rtl' ],
+            'sms_gateway'       => [ 'smsir', 'kavenegar', 'farazsms', 'melipayamak' ],
         ];
-        // Credentials and pattern are intentionally allowed to be empty (not yet configured)
-        $allow_empty_keys = [ 'sms_api_key', 'sms_username', 'sms_password', 'sms_line_number', 'sms_pattern' ];
+        // Allow empty: credentials, pattern, and visibility target lists
+        $allow_empty_keys = [ 'sms_api_key', 'sms_username', 'sms_password', 'sms_line_number', 'sms_pattern', 'button_categories', 'button_products' ];
 
         foreach ( $defs as $key => $default ) {
             $raw = $input[ $key ] ?? '';
@@ -314,8 +389,17 @@ class UPSN_Settings {
         </div>
         <script>
         jQuery(function ($) {
-            // Fields visible per gateway: field_key → [gateways that need it]
-            var visibility = {
+            // ── Button visibility: show/hide category/product pickers ──────────
+            function applyButtonVisibility() {
+                var mode = $('#upsn-field-button_visibility').val();
+                $('#upsn-field-button_categories').closest('tr').toggle( mode === 'categories' );
+                $('#upsn-field-button_products').closest('tr').toggle( mode === 'products' );
+            }
+            $('#upsn-field-button_visibility').on('change', applyButtonVisibility);
+            applyButtonVisibility();
+
+            // ── SMS gateway: show/hide credential fields ───────────────────────
+            var gatewayFields = {
                 sms_api_key:     ['smsir', 'kavenegar'],
                 sms_username:    ['farazsms', 'melipayamak'],
                 sms_password:    ['farazsms', 'melipayamak'],
@@ -323,16 +407,16 @@ class UPSN_Settings {
                 sms_param_name:  ['smsir', 'kavenegar', 'farazsms'],
             };
 
-            function applyVisibility() {
+            function applyGatewayVisibility() {
                 var gw = $('#upsn-field-sms_gateway').val();
-                $.each(visibility, function (fieldKey, gateways) {
+                $.each(gatewayFields, function (fieldKey, gateways) {
                     var $tr = $('#upsn-field-' + fieldKey).closest('tr');
                     $tr.toggle(gateways.indexOf(gw) !== -1);
                 });
             }
 
-            $('#upsn-field-sms_gateway').on('change', applyVisibility);
-            applyVisibility();
+            $('#upsn-field-sms_gateway').on('change', applyGatewayVisibility);
+            applyGatewayVisibility();
         });
         </script>
         <?php
