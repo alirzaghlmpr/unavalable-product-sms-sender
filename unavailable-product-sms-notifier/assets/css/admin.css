@@ -165,3 +165,42 @@ input.upsn-filter-input[type="date"] { min-width: 140px; }
     position: absolute;
     bottom: 0;
 }
+
+/* ── Pagination ────────────────────────────────────────────────────────────── */
+.upsn-admin .tablenav-pages {
+    float: left;
+    margin: 0;
+    line-height: 28px;
+}
+.upsn-admin .tablenav-pages.one-page .pagination-links,
+.upsn-admin .tablenav-pages.one-page .upsn-paging-text {
+    display: none;
+}
+.upsn-admin .tablenav-pages .displaying-num {
+    margin-left: 8px;
+    color: #646970;
+}
+.upsn-admin .tablenav-pages .upsn-paging-text {
+    margin-right: 8px;
+    color: #646970;
+}
+.upsn-admin .tablenav-pages .page-numbers {
+    display: inline-block;
+    min-width: 28px;
+    padding: 0 6px;
+    text-align: center;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    background: #fff;
+    text-decoration: none;
+    margin: 0 2px;
+}
+.upsn-admin .tablenav-pages .page-numbers.current {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+.upsn-admin .tablenav-pages .page-numbers.dots {
+    border-color: transparent;
+    background: transparent;
+}

@@ -78,6 +78,42 @@
         <?php endif; ?>
     </form>
 
+    <?php
+    // Build the pagination block once and reuse it at the top and bottom of the table.
+    $pagination_links = '';
+    if ( $pages > 1 ) {
+        $links = paginate_links( [
+            'base'      => add_query_arg( 'paged', '%#%' ),
+            'format'    => '',
+            'current'   => $paged,
+            'total'     => $pages,
+            'prev_text' => '‹',
+            'next_text' => '›',
+            'type'      => 'array',
+        ] );
+        if ( $links ) {
+            $pagination_links = '<span class="pagination-links">' . implode( "\n", $links ) . '</span>';
+        }
+    }
+
+    $render_tablenav_pages = static function () use ( $total, $paged, $pages, $pagination_links ) {
+        $extra_class = $pages > 1 ? '' : ' one-page';
+        ?>
+        <div class="tablenav-pages<?php echo esc_attr( $extra_class ); ?>">
+            <span class="displaying-num">
+                <?php printf( esc_html__( '%d درخواست', 'upsn' ), $total ); ?>
+            </span>
+            <?php if ( $pages > 1 ) : ?>
+                <?php echo $pagination_links; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                <span class="upsn-paging-text">
+                    <?php printf( esc_html__( 'صفحه %1$d از %2$d', 'upsn' ), $paged, $pages ); ?>
+                </span>
+            <?php endif; ?>
+        </div>
+        <?php
+    };
+    ?>
+
     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
         <?php wp_nonce_field( 'upsn_bulk_action' ); ?>
         <input type="hidden" name="action" value="upsn_bulk" />
@@ -91,11 +127,7 @@
                 </select>
                 <button type="submit" class="button action"><?php esc_html_e( 'اعمال', 'upsn' ); ?></button>
             </div>
-            <div class="tablenav-pages alignright" style="line-height:28px">
-                <span class="displaying-num">
-                    <?php printf( esc_html__( '%d درخواست', 'upsn' ), $total ); ?>
-                </span>
-            </div>
+            <?php $render_tablenav_pages(); ?>
         </div>
 
         <table class="wp-list-table widefat fixed striped">
@@ -167,20 +199,9 @@
         </table>
 
         <!-- Pagination -->
-        <?php if ( $pages > 1 ) : ?>
-            <div class="tablenav bottom">
-                <div class="tablenav-pages">
-                    <?php
-                    echo paginate_links( [
-                        'base'    => add_query_arg( 'paged', '%#%' ),
-                        'format'  => '',
-                        'current' => $paged,
-                        'total'   => $pages,
-                    ] );
-                    ?>
-                </div>
-            </div>
-        <?php endif; ?>
+        <div class="tablenav bottom">
+            <?php $render_tablenav_pages(); ?>
+        </div>
     </form>
 </div>
 
