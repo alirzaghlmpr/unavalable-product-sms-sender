@@ -1,0 +1,7 @@
+# Standalone diagnostic tool — never ship to production
+upsn-debug.php
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.log

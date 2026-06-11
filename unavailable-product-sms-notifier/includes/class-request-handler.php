@@ -127,21 +127,7 @@ class UPSN_Request_Handler {
         if ( $limit <= 0 ) {
             return;
         }
-        $key   = self::ip_transient_key();
-        $count = (int) get_transient( $key );
-        // set_transient refreshes the TTL only on first set; use a fixed window
-        if ( $count === 0 ) {
-            set_transient( $key, 1, HOUR_IN_SECONDS );
-        } else {
-            // Update value without extending the window
-            global $wpdb;
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE {$wpdb->options} SET option_value = option_value + 1 WHERE option_name = %s",
-                    '_transient_' . $key
-                )
-            );
-        }
+        self::increment_counter( self::ip_transient_key(), HOUR_IN_SECONDS );
     }
 
     private static function increment_phone_counter( string $phone ): void {
@@ -149,18 +135,31 @@ class UPSN_Request_Handler {
         if ( $limit <= 0 ) {
             return;
         }
-        $key   = self::phone_transient_key( $phone );
-        $count = (int) get_transient( $key );
-        if ( $count === 0 ) {
-            set_transient( $key, 1, DAY_IN_SECONDS );
-        } else {
-            global $wpdb;
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE {$wpdb->options} SET option_value = option_value + 1 WHERE option_name = %s",
-                    '_transient_' . $key
-                )
-            );
+        self::increment_counter( self::phone_transient_key( $phone ), DAY_IN_SECONDS );
+    }
+
+    /**
+     * Fixed-window counter built on the transient API so it works regardless of
+     * the backend (DB or a persistent object cache such as Redis/Memcached).
+     *
+     * The window TTL is anchored on first hit via a sibling "_window" transient,
+     * so subsequent increments don't slide the window forward.
+     */
+    private static function increment_counter( string $key, int $window ): void {
+        $window_key = $key . '_window';
+        $expires    = (int) get_transient( $window_key );
+
+        if ( $expires <= 0 ) {
+            // First hit in this window: anchor the expiry timestamp.
+            $expires = time() + $window;
+            set_transient( $window_key, $expires, $window );
+            set_transient( $key, 1, $window );
+            return;
         }
+
+        // Subsequent hits: bump the count but keep the remaining window length.
+        $remaining = max( 1, $expires - time() );
+        $count     = (int) get_transient( $key );
+        set_transient( $key, $count + 1, $remaining );
     }
 }

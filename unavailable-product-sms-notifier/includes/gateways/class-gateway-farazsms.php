@@ -4,9 +4,9 @@ defined( 'ABSPATH' ) || exit;
 class UPSN_Gateway_FarazSMS extends UPSN_SMS_Gateway {
 
     public function send_sms( string $to, array $variables, string $pattern ): object {
-        error_log( '======================================' );
-        error_log( '📤 [UPSN] FARAZSMS SEND STARTED' );
-        error_log( '======================================' );
+        upsn_log( '======================================' );
+        upsn_log( '📤 [UPSN] FARAZSMS SEND STARTED' );
+        upsn_log( '======================================' );
 
         try {
             $base_url = $this->base_url ?: 'https://ippanel.com/patterns/pattern';
@@ -19,8 +19,8 @@ class UPSN_Gateway_FarazSMS extends UPSN_SMS_Gateway {
                 . '&input_data='  . urlencode( wp_json_encode( $variables ) )
                 . '&pattern_code=' . urlencode( $pattern );
 
-            error_log( "ℹ️ FarazSMS: To - {$to} | Pattern - {$pattern}" );
-            error_log( "ℹ️ FarazSMS: Variables - " . wp_json_encode( $variables ) );
+            upsn_log( "ℹ️ FarazSMS: To - {$to} | Pattern - {$pattern}" );
+            upsn_log( "ℹ️ FarazSMS: Variables - " . wp_json_encode( $variables ) );
 
             $response = wp_remote_post( $url, [
                 'timeout' => 15,
@@ -30,30 +30,30 @@ class UPSN_Gateway_FarazSMS extends UPSN_SMS_Gateway {
 
             if ( is_wp_error( $response ) ) {
                 $msg = $response->get_error_message();
-                error_log( "❌ FarazSMS: wp_remote_post ERROR - {$msg}" );
-                error_log( '======================================' );
+                upsn_log( "❌ FarazSMS: wp_remote_post ERROR - {$msg}" );
+                upsn_log( '======================================' );
                 return (object) [ 'success' => false, 'code' => null, 'message' => $msg, 'raw_response' => null ];
             }
 
             $http_code = wp_remote_retrieve_response_code( $response );
             $raw_body  = trim( wp_remote_retrieve_body( $response ) );
 
-            error_log( "ℹ️ FarazSMS: HTTP {$http_code} | Body: {$raw_body}" );
+            upsn_log( "ℹ️ FarazSMS: HTTP {$http_code} | Body: {$raw_body}" );
 
             // Long numeric body = message ID = success
             if ( is_numeric( $raw_body ) && strlen( $raw_body ) > 5 ) {
-                error_log( "✅ FarazSMS: SUCCESS (ID: {$raw_body})" );
-                error_log( '======================================' );
+                upsn_log( "✅ FarazSMS: SUCCESS (ID: {$raw_body})" );
+                upsn_log( '======================================' );
                 return (object) [ 'success' => true, 'code' => $raw_body, 'message' => 'پیامک با موفقیت ارسال شد', 'raw_response' => $raw_body ];
             }
 
-            error_log( "❌ FarazSMS: FAILED - {$raw_body}" );
-            error_log( '======================================' );
+            upsn_log( "❌ FarazSMS: FAILED - {$raw_body}" );
+            upsn_log( '======================================' );
             return (object) [ 'success' => false, 'code' => null, 'message' => $raw_body, 'raw_response' => $raw_body ];
 
         } catch ( Exception $e ) {
-            error_log( '❌ FarazSMS: EXCEPTION - ' . $e->getMessage() );
-            error_log( '======================================' );
+            upsn_log( '❌ FarazSMS: EXCEPTION - ' . $e->getMessage() );
+            upsn_log( '======================================' );
             return (object) [ 'success' => false, 'code' => null, 'message' => $e->getMessage(), 'raw_response' => null ];
         }
     }

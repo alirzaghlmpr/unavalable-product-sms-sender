@@ -33,6 +33,16 @@ function upsn_is_woocommerce_active(): bool {
     return class_exists( 'WooCommerce' );
 }
 
+/**
+ * Debug logger. Writes to the PHP error log only when WP_DEBUG is enabled,
+ * so production logs aren't flooded with SMS payloads (which contain PII).
+ */
+function upsn_log( string $message ): void {
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( $message );
+    }
+}
+
 // ── Activation / Deactivation ────────────────────────────────────────────────
 register_activation_hook( __FILE__, function () {
     require_once UPSN_PATH . 'includes/class-database.php';
@@ -46,6 +56,8 @@ register_deactivation_hook( __FILE__, function () {
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 add_action( 'plugins_loaded', 'upsn_init' );
 function upsn_init() {
+    load_plugin_textdomain( 'upsn', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
     if ( ! upsn_is_woocommerce_active() ) {
         return;
     }

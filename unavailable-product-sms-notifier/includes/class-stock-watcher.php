@@ -57,11 +57,11 @@ class UPSN_Stock_Watcher {
                     [ 'product_id' => $product_id ],
                     'upsn'
                 );
-                error_log( "[UPSN] Notifications scheduled via Action Scheduler for product #{$product_id}." );
+                upsn_log( "[UPSN] Notifications scheduled via Action Scheduler for product #{$product_id}." );
             }
         } else {
             // Fallback: send synchronously (less reliable on shared hosting)
-            error_log( '[UPSN] Action Scheduler not available — sending synchronously.' );
+            upsn_log( '[UPSN] Action Scheduler not available — sending synchronously.' );
             self::dispatch_notifications( $product_id );
         }
     }

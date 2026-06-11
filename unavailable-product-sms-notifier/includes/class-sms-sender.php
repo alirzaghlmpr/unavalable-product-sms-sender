@@ -16,7 +16,7 @@ class UPSN_SMS_Sender {
         $param_name  = UPSN_Settings::get( 'sms_param_name', 'product' );
 
         if ( ! $pattern ) {
-            error_log( '[UPSN] SMS skipped: pattern / template ID not configured.' );
+            upsn_log( '[UPSN] SMS skipped: pattern / template ID not configured.' );
             return false;
         }
 
@@ -35,7 +35,7 @@ class UPSN_SMS_Sender {
 
         $gateway = self::make_gateway( $gateway_key );
         if ( ! $gateway ) {
-            error_log( "[UPSN] SMS skipped: unknown or misconfigured gateway '{$gateway_key}'." );
+            upsn_log( "[UPSN] SMS skipped: unknown or misconfigured gateway '{$gateway_key}'." );
             return false;
         }
 
@@ -52,7 +52,7 @@ class UPSN_SMS_Sender {
         $file  = UPSN_PATH . 'includes/gateways/' . $entry['file'];
 
         if ( ! file_exists( $file ) ) {
-            error_log( "[UPSN] Gateway file not found: {$file}" );
+            upsn_log( "[UPSN] Gateway file not found: {$file}" );
             return null;
         }
 

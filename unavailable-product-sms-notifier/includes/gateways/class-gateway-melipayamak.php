@@ -4,9 +4,9 @@ defined( 'ABSPATH' ) || exit;
 class UPSN_Gateway_MeliPayamak extends UPSN_SMS_Gateway {
 
     public function send_sms( string $to, array $variables, string $pattern ): object {
-        error_log( '======================================' );
-        error_log( '📤 [UPSN] MELIPAYAMAK SEND STARTED' );
-        error_log( '======================================' );
+        upsn_log( '======================================' );
+        upsn_log( '📤 [UPSN] MELIPAYAMAK SEND STARTED' );
+        upsn_log( '======================================' );
 
         try {
             $endpoint = $this->base_url ?: 'https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber';
@@ -22,7 +22,7 @@ class UPSN_Gateway_MeliPayamak extends UPSN_SMS_Gateway {
                 'bodyId'   => $pattern,
             ];
 
-            error_log( "ℹ️ MeliPayamak: To - {$to} | bodyId - {$pattern} | Text - {$text}" );
+            upsn_log( "ℹ️ MeliPayamak: To - {$to} | bodyId - {$pattern} | Text - {$text}" );
 
             $response = wp_remote_post( $endpoint, [
                 'timeout' => 15,
@@ -32,8 +32,8 @@ class UPSN_Gateway_MeliPayamak extends UPSN_SMS_Gateway {
 
             if ( is_wp_error( $response ) ) {
                 $msg = $response->get_error_message();
-                error_log( "❌ MeliPayamak: wp_remote_post ERROR - {$msg}" );
-                error_log( '======================================' );
+                upsn_log( "❌ MeliPayamak: wp_remote_post ERROR - {$msg}" );
+                upsn_log( '======================================' );
                 return (object) [ 'success' => false, 'code' => null, 'message' => $msg, 'raw_response' => null ];
             }
 
@@ -41,11 +41,11 @@ class UPSN_Gateway_MeliPayamak extends UPSN_SMS_Gateway {
             $raw_body  = trim( wp_remote_retrieve_body( $response ) );
             $data      = json_decode( $raw_body, true );
 
-            error_log( "ℹ️ MeliPayamak: HTTP {$http_code} | Body: {$raw_body}" );
+            upsn_log( "ℹ️ MeliPayamak: HTTP {$http_code} | Body: {$raw_body}" );
 
             if ( json_last_error() !== JSON_ERROR_NONE ) {
-                error_log( '❌ MeliPayamak: Invalid JSON - ' . json_last_error_msg() );
-                error_log( '======================================' );
+                upsn_log( '❌ MeliPayamak: Invalid JSON - ' . json_last_error_msg() );
+                upsn_log( '======================================' );
                 return (object) [ 'success' => false, 'code' => null, 'message' => 'Invalid JSON: ' . json_last_error_msg(), 'raw_response' => $raw_body ];
             }
 
@@ -57,17 +57,17 @@ class UPSN_Gateway_MeliPayamak extends UPSN_SMS_Gateway {
                     || ( ! empty( $data['RetStatus'] ) && (int) $data['RetStatus'] === 1 );
 
             if ( $success ) {
-                error_log( "✅ MeliPayamak: SUCCESS" );
+                upsn_log( "✅ MeliPayamak: SUCCESS" );
             } else {
-                error_log( "❌ MeliPayamak: FAILED - {$message}" );
+                upsn_log( "❌ MeliPayamak: FAILED - {$message}" );
             }
 
-            error_log( '======================================' );
+            upsn_log( '======================================' );
             return (object) [ 'success' => $success, 'code' => $code, 'message' => $message, 'raw_response' => $raw_body ];
 
         } catch ( Exception $e ) {
-            error_log( '❌ MeliPayamak: EXCEPTION - ' . $e->getMessage() );
-            error_log( '======================================' );
+            upsn_log( '❌ MeliPayamak: EXCEPTION - ' . $e->getMessage() );
+            upsn_log( '======================================' );
             return (object) [ 'success' => false, 'code' => null, 'message' => $e->getMessage(), 'raw_response' => null ];
         }
     }

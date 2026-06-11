@@ -222,6 +222,8 @@ class UPSN_Database {
 
     /** @return array{0: string, 1: array} */
     private static function build_where( array $args ): array {
+        global $wpdb;
+
         $clauses = [];
         $values  = [];
 
