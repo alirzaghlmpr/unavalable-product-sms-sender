@@ -62,7 +62,7 @@ class UPSN_Admin_Panel {
         $search_phone  = isset( $_GET['search_phone'] )  ? sanitize_text_field( $_GET['search_phone'] )  : '';
         $date_from     = isset( $_GET['date_from'] )     ? sanitize_text_field( $_GET['date_from'] )     : '';
         $date_to       = isset( $_GET['date_to'] )       ? sanitize_text_field( $_GET['date_to'] )       : '';
-        $per_page      = 20;
+        $per_page      = 10;
 
         $filters = [
             'search_phone' => $search_phone,
