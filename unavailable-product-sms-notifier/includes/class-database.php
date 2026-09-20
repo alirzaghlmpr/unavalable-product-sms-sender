@@ -102,27 +102,23 @@ class UPSN_Database {
         );
     }
 
-    public static function mark_resend_pending( int $id ): void {
+    /**
+     * Queue a fresh pending request for the same product + phone as an existing row.
+     *
+     * The original row is never modified, so its notified / failed history stays
+     * available for reports. Returns false when the row is missing or the phone is
+     * already waiting for that product.
+     */
+    public static function requeue( int $id ): bool {
         global $wpdb;
         $table = $wpdb->prefix . UPSN_TABLE;
 
-        $wpdb->update(
-            $table,
-            [ 'status' => 'pending', 'notified_at' => null ],
-            [ 'id'     => $id ],
-            [ '%s', null ],
-            [ '%d' ]
-        );
-    }
-
-    public static function delete_by_ids( array $ids ): int {
-        if ( empty( $ids ) ) {
-            return 0;
+        $row = $wpdb->get_row( $wpdb->prepare( "SELECT product_id, phone FROM {$table} WHERE id = %d", $id ) );
+        if ( ! $row || self::exists( (int) $row->product_id, $row->phone ) ) {
+            return false;
         }
-        global $wpdb;
-        $table        = $wpdb->prefix . UPSN_TABLE;
-        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-        return (int) $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE id IN ({$placeholders})", $ids ) );
+
+        return self::insert( (int) $row->product_id, $row->phone );
     }
 
     /** @return array<object> */

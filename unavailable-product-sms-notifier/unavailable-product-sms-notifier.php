@@ -3,7 +3,7 @@
  * Plugin Name: Unavailable Product SMS Notifier
  * Plugin URI:  https://github.com/alirzaghlmpr/unavalable-product-sms-sender
  * Description: Lets customers request SMS notification when an out-of-stock WooCommerce product becomes available again.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author:      alirzaghlmpr
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'UPSN_VERSION', '1.0.0' );
+define( 'UPSN_VERSION', '1.1.0' );
 define( 'UPSN_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'UPSN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'UPSN_TABLE',   'upsn_notify_requests' );

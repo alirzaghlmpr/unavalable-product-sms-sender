@@ -1,46 +1,89 @@
-/* ── CSS Custom Properties (overridden by inline style from settings) ──── */
+/* ── Design tokens (overridden by the inline style built from Settings) ── */
 :root {
-    --upsn-btn-bg:        #2271b1;
+    --upsn-btn-bg:        #2748e8;
     --upsn-btn-color:     #ffffff;
-    --upsn-btn-radius:    4px;
+    --upsn-btn-radius:    12px;
     --upsn-overlay-alpha: 0.55;
     --upsn-modal-bg:      #ffffff;
-    --upsn-modal-radius:  8px;
-    --upsn-text-dir:      ltr;
-    --upsn-input-border:  #cccccc;
-    --upsn-input-focus:   #2271b1;
-    --upsn-submit-bg:     #2271b1;
+    --upsn-modal-radius:  20px;
+    --upsn-text-dir:      rtl;
+    --upsn-input-border:  #d9dce8;
+    --upsn-input-focus:   #2748e8;
+    --upsn-submit-bg:     #2748e8;
     --upsn-submit-color:  #ffffff;
-    --upsn-submit-radius: 4px;
-    --upsn-success-color: #1a7b4b;
-    --upsn-error-color:   #cc1818;
+    --upsn-submit-radius: 12px;
+    --upsn-success-color: #0b7a53;
+    --upsn-error-color:   #c62a3b;
 }
 
-/* ── Notify Button ────────────────────────────────────────────────────── */
+/* ── Notify button ────────────────────────────────────────────────────── */
 .upsn-notify-wrap {
-    margin: 12px 0;
+    margin: 16px 0;
 }
 
-.upsn-notify-btn {
-    display: inline-block;
+.upsn-notify-wrap .upsn-notify-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    margin: 0;
     padding: 12px 24px;
-    background-color: var(--upsn-btn-bg);
+    background: var(--upsn-btn-bg);
     color: var(--upsn-btn-color);
-    border: none;
+    border: 0;
     border-radius: var(--upsn-btn-radius);
+    font: inherit;
     font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+    text-transform: none;
+    text-decoration: none;
+    text-shadow: none;
     cursor: pointer;
-    transition: filter 0.2s ease;
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 10px 22px -10px color-mix(in srgb, var(--upsn-btn-bg) 85%, transparent);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
 
-.upsn-notify-btn:hover,
-.upsn-notify-btn:focus {
-    filter: brightness(0.85);
-    outline: 2px solid var(--upsn-btn-bg);
-    outline-offset: 2px;
+.upsn-notify-wrap .upsn-notify-btn:hover {
+    background: var(--upsn-btn-bg);
+    color: var(--upsn-btn-color);
+    filter: brightness(1.07);
+    transform: translateY(-1px);
 }
 
-/* ── Modal Overlay ────────────────────────────────────────────────────── */
+.upsn-notify-wrap .upsn-notify-btn:active {
+    transform: translateY(0) scale(0.99);
+    filter: brightness(0.96);
+}
+
+.upsn-notify-wrap .upsn-notify-btn:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--upsn-btn-bg) 40%, transparent);
+    outline-offset: 3px;
+}
+
+.upsn-notify-btn__icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    transform-origin: 50% 2px;
+}
+
+/* One bell ring when the shopper reaches for the button */
+.upsn-notify-btn:hover .upsn-notify-btn__icon,
+.upsn-notify-btn:focus-visible .upsn-notify-btn__icon {
+    animation: upsn-ring 0.8s ease;
+}
+
+@media (max-width: 480px) {
+    .upsn-notify-wrap .upsn-notify-btn {
+        width: 100%;
+    }
+}
+
+/* ── Modal shell ──────────────────────────────────────────────────────── */
 .upsn-modal {
     position: fixed;
     inset: 0;
@@ -48,161 +91,535 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 16px;
+    font-family: inherit;
+    -webkit-font-smoothing: antialiased;
 }
 
 .upsn-modal[hidden] {
     display: none;
 }
 
+.upsn-modal *,
+.upsn-modal *::before,
+.upsn-modal *::after {
+    box-sizing: border-box;
+}
+
+html.upsn-modal-open,
+html.upsn-modal-open body {
+    overflow: hidden;
+}
+
 .upsn-modal__backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, var(--upsn-overlay-alpha));
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    animation: upsn-fade 0.2s ease both;
 }
 
-/* ── Modal Box ────────────────────────────────────────────────────────── */
-.upsn-modal__box {
+.upsn-modal .upsn-modal__box {
     position: relative;
-    background: var(--upsn-modal-bg);
-    border-radius: var(--upsn-modal-radius);
-    padding: 32px 28px 24px;
-    max-width: 420px;
-    width: calc(100% - 32px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    padding: 28px 28px 24px;
+    background: var(--upsn-modal-bg);
+    color: #1b2036;
+    border-radius: var(--upsn-modal-radius);
+    box-shadow: 0 0 0 1px rgba(20, 24, 58, 0.06), 0 30px 70px -16px rgba(8, 12, 40, 0.45);
     direction: var(--upsn-text-dir);
     text-align: start;
-}
-
-.upsn-modal__box h2 {
-    margin: 0 0 8px;
-    font-size: 20px;
-}
-
-.upsn-modal__box p {
-    margin: 0 0 20px;
-    color: #555;
     font-size: 14px;
+    line-height: 1.6;
+    animation: upsn-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
 }
 
-.upsn-modal__close {
+.upsn-modal .upsn-modal__close {
     position: absolute;
-    top: 12px;
-    right: 16px;
-    background: none;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
-    color: #888;
-    line-height: 1;
-    padding: 4px;
-}
-
-.upsn-modal__close:hover {
-    color: #333;
-}
-
-/* ── Form ─────────────────────────────────────────────────────────────── */
-#upsn-form label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 14px;
-}
-
-#upsn-phone {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--upsn-input-border);
-    border-radius: 4px;
-    font-size: 15px;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-    direction: ltr;
-}
-
-#upsn-phone:focus {
-    border-color: var(--upsn-input-focus);
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--upsn-input-focus) 25%, transparent);
-}
-
-#upsn-phone.is-invalid {
-    border-color: var(--upsn-error-color);
-}
-
-.upsn-error {
-    display: block;
-    color: var(--upsn-error-color);
-    font-size: 13px;
-    min-height: 18px;
-    margin: 4px 0 12px;
-}
-
-#upsn-submit-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--upsn-submit-bg);
-    color: var(--upsn-submit-color);
-    border: none;
-    border-radius: var(--upsn-submit-radius);
-    font-size: 15px;
-    cursor: pointer;
-    transition: filter 0.2s ease;
-    margin-top: 4px;
-}
-
-#upsn-submit-btn:hover:not(:disabled) {
-    filter: brightness(0.85);
-}
-
-#upsn-submit-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* ── Result Message ───────────────────────────────────────────────────── */
-.upsn-form-message {
-    font-size: 14px;
-    min-height: 20px;
-    text-align: center;
-}
-
-.upsn-form-message.is-success {
-    color: var(--upsn-success-color);
-}
-
-.upsn-form-message.is-error {
-    color: var(--upsn-error-color);
-    margin-top: 10px;
-}
-
-/* ── Success State ────────────────────────────────────────────────────── */
-.upsn-success-state {
-    text-align: center;
-    padding: 8px 0 4px;
-}
-
-.upsn-success-state__icon {
+    top: 14px;
+    inset-inline-end: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+    background: rgba(20, 24, 58, 0.06);
+    color: #4a506b;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.upsn-modal .upsn-modal__close:hover {
+    background: rgba(20, 24, 58, 0.12);
+    color: #1b2036;
+}
+
+.upsn-modal .upsn-modal__close:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--upsn-input-focus) 40%, transparent);
+    outline-offset: 1px;
+}
+
+.upsn-modal__close svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Product context ──────────────────────────────────────────────────── */
+.upsn-modal__product {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    margin-inline-end: 42px;
+    padding: 8px;
+    background: rgba(20, 24, 58, 0.04);
+    border-radius: 14px;
+}
+
+.upsn-modal__product img {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.upsn-modal__product-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upsn-modal__product:not(:has(img)) {
+    padding-inline-start: 12px;
+}
+
+.upsn-modal__tag {
+    flex: none;
+    margin-inline-end: 4px;
+    padding: 2px 9px;
+    background: #fdecec;
+    color: #b42318;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ── Copy ─────────────────────────────────────────────────────────────── */
+.upsn-modal .upsn-modal__box h2 {
+    margin: 0 0 6px;
+    padding: 0;
+    color: #131831;
+    font-family: inherit;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.upsn-modal .upsn-modal__subtitle {
+    margin: 0 0 22px;
+    color: #5a607b;
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────── */
+.upsn-modal .upsn-label {
+    display: block;
+    margin: 0 0 8px;
+    color: #2a2f47;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.upsn-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.upsn-input__icon,
+.upsn-input__ok {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    pointer-events: none;
+}
+
+.upsn-input__icon {
+    inset-inline-start: 14px;
+    color: #8a90a8;
+    transition: color 0.15s ease;
+}
+
+.upsn-input__ok {
+    inset-inline-end: 14px;
+    color: var(--upsn-success-color);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.upsn-input.is-valid .upsn-input__ok {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.upsn-input:focus-within .upsn-input__icon {
+    color: var(--upsn-input-focus);
+}
+
+.upsn-modal #upsn-phone {
+    display: block;
+    width: 100%;
+    height: 52px;
+    margin: 0;
+    padding: 0 46px;
+    background: #fff;
+    color: #131831;
+    border: 1.5px solid var(--upsn-input-border);
+    border-radius: min(var(--upsn-submit-radius), 16px);
+    box-shadow: none;
+    direction: ltr;
+    text-align: left;
+    font-family: inherit;
+    font-size: 16px; /* 16px stops iOS from zooming the page on focus */
+    letter-spacing: 0.06em;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.upsn-modal[dir="rtl"] #upsn-phone {
+    text-align: right;
+}
+
+.upsn-modal #upsn-phone::placeholder {
+    color: #a3a8bd;
+    letter-spacing: 0.06em;
+}
+
+.upsn-modal #upsn-phone:focus {
+    border-color: var(--upsn-input-focus);
+    outline: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--upsn-input-focus) 18%, transparent);
+}
+
+.upsn-modal #upsn-phone.is-invalid {
+    border-color: var(--upsn-error-color);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--upsn-error-color) 14%, transparent);
+    animation: upsn-shake 0.35s ease;
+}
+
+.upsn-modal .upsn-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 14px;
+    color: var(--upsn-error-color);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.upsn-modal .upsn-error:not(:empty)::before {
+    content: "";
+    flex: none;
+    width: 15px;
+    height: 15px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4M12 16h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4M12 16h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.upsn-modal #upsn-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 52px;
+    margin: 0;
+    padding: 0 16px;
+    background: var(--upsn-submit-bg);
+    color: var(--upsn-submit-color);
+    border: 0;
+    border-radius: min(var(--upsn-submit-radius), 16px);
+    font: inherit;
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 24px -12px color-mix(in srgb, var(--upsn-submit-bg) 90%, transparent);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.upsn-modal #upsn-submit-btn:hover:not(:disabled) {
+    background: var(--upsn-submit-bg);
+    color: var(--upsn-submit-color);
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+}
+
+.upsn-modal #upsn-submit-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+}
+
+.upsn-modal #upsn-submit-btn:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--upsn-submit-bg) 40%, transparent);
+    outline-offset: 3px;
+}
+
+.upsn-modal #upsn-submit-btn:disabled {
+    cursor: progress;
+    filter: none;
+    transform: none;
+    opacity: 0.85;
+}
+
+.upsn-spinner {
+    display: none;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+    animation: upsn-spin 0.7s linear infinite;
+}
+
+.upsn-modal #upsn-submit-btn.is-loading .upsn-spinner {
+    display: inline-block;
+}
+
+.upsn-modal .upsn-form-message {
+    text-align: center;
+    font-size: 13.5px;
+    line-height: 1.7;
+}
+
+.upsn-modal .upsn-form-message:empty {
+    display: none;
+}
+
+.upsn-modal .upsn-form-message.is-error {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: color-mix(in srgb, var(--upsn-error-color) 9%, transparent);
+    color: var(--upsn-error-color);
+    border-radius: 12px;
+}
+
+.upsn-modal .upsn-note {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    margin: 16px 0 0;
+    color: #767c95;
+    font-size: 12.5px;
+    line-height: 1.7;
+}
+
+.upsn-note svg {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+}
+
+/* ── Views: form → success ────────────────────────────────────────────── */
+.upsn-modal__view--success {
+    display: none;
+    padding: 14px 0 2px;
+    text-align: center;
+}
+
+.upsn-modal__box.is-success .upsn-modal__view--form {
+    display: none;
+}
+
+.upsn-modal__box.is-success .upsn-modal__view--success {
+    display: block;
+}
+
+.upsn-success-state__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 20px;
     background: color-mix(in srgb, var(--upsn-success-color) 12%, transparent);
     border-radius: 50%;
-    margin: 0 auto 16px;
+}
+
+.upsn-success-state__icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--upsn-success-color);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.upsn-modal__box.is-success .upsn-success-state__icon::after {
+    animation: upsn-ripple 0.9s 0.25s ease-out;
 }
 
 .upsn-success-state__icon svg {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     stroke: var(--upsn-success-color);
 }
 
-.upsn-success-state__text {
-    font-size: 15px;
+.upsn-success-state__icon svg path {
+    stroke-dasharray: 26;
+    stroke-dashoffset: 26;
+}
+
+.upsn-modal__box.is-success .upsn-success-state__icon svg path {
+    animation: upsn-draw 0.45s 0.15s ease forwards;
+}
+
+.upsn-modal .upsn-success-state__text {
+    margin: 0 auto;
+    max-width: 34ch;
     color: var(--upsn-success-color);
-    font-weight: 500;
-    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.9;
+}
+
+/* Focused by script so screen readers announce it; it isn't interactive, so no ring */
+.upsn-modal .upsn-success-state__text:focus {
+    outline: none;
+}
+
+.upsn-modal .upsn-success-state__done {
+    min-height: 46px;
+    margin: 22px 0 0;
+    padding: 0 32px;
+    background: transparent;
+    color: #2a2f47;
+    border: 1.5px solid rgba(20, 24, 58, 0.16);
+    border-radius: min(var(--upsn-submit-radius), 16px);
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-transform: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.upsn-modal .upsn-success-state__done:hover {
+    background: rgba(20, 24, 58, 0.05);
+    color: #2a2f47;
+}
+
+/* ── Phones: the popup becomes a bottom sheet ─────────────────────────── */
+@media (max-width: 560px) {
+    .upsn-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .upsn-modal .upsn-modal__box {
+        max-width: none;
+        max-height: 92vh;
+        max-height: 92dvh;
+        padding: 30px 20px calc(22px + env(safe-area-inset-bottom));
+        border-radius: var(--upsn-modal-radius) var(--upsn-modal-radius) 0 0;
+        animation: upsn-sheet 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .upsn-modal .upsn-modal__box::before {
+        content: "";
+        position: absolute;
+        top: 9px;
+        inset-inline-start: 50%;
+        width: 38px;
+        height: 4px;
+        margin-inline-start: -19px;
+        background: rgba(20, 24, 58, 0.16);
+        border-radius: 4px;
+    }
+}
+
+/* ── Live preview in the settings page: same markup, rendered inline ──── */
+.upsn-modal.upsn-modal--static {
+    position: relative;
+    inset: auto;
+    z-index: 0;
+    align-items: center;
+    padding: 28px 16px;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.upsn-modal--static .upsn-modal__backdrop,
+.upsn-modal--static .upsn-modal__box {
+    animation: none;
+}
+
+.upsn-modal--static .upsn-modal__box {
+    max-width: 440px;
+    max-height: none;
+    padding: 28px 28px 24px;
+    border-radius: var(--upsn-modal-radius);
+}
+
+.upsn-modal--static .upsn-modal__box::before {
+    display: none;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+@keyframes upsn-fade   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes upsn-pop    { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes upsn-sheet  { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes upsn-spin   { to { transform: rotate(360deg); } }
+@keyframes upsn-draw   { to { stroke-dashoffset: 0; } }
+@keyframes upsn-ripple { 0% { opacity: 0.55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes upsn-shake  { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
+@keyframes upsn-ring {
+    0%, 100% { transform: rotate(0); }
+    20%      { transform: rotate(16deg); }
+    40%      { transform: rotate(-13deg); }
+    60%      { transform: rotate(8deg); }
+    80%      { transform: rotate(-4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upsn-modal *,
+    .upsn-modal *::before,
+    .upsn-modal *::after,
+    .upsn-notify-btn,
+    .upsn-notify-btn__icon {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .upsn-success-state__icon svg path {
+        stroke-dashoffset: 0;
+    }
 }

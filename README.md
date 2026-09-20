@@ -33,7 +33,7 @@ A WordPress / WooCommerce plugin that lets customers request an **SMS notificati
 ## ✨ Features
 
 - 🔔 **"Notify me when available" button** rendered automatically on out-of-stock single product pages.
-- 🎨 **Customizable popup/modal** — customers enter their mobile number to subscribe. Colors, text, labels, direction (LTR/RTL), and messages are all configurable from the admin panel.
+- 🎨 **Customizable popup/modal** — customers enter their mobile number to subscribe. The popup shows the product, accepts Persian/Arabic digits, and becomes a bottom sheet on phones. Colors, text, labels, direction (LTR/RTL), and messages are all configurable from the admin panel, with a **live preview** on the settings page.
 - ⚡ **Automatic dispatch on restock** — listens for WooCommerce stock changes (status + quantity, including variations) and sends queued notifications in the background via [Action Scheduler](https://actionscheduler.org/) when available, falling back to synchronous sending.
 - 📨 **Multiple Iranian SMS gateways** out of the box:
   - [SMS.ir](https://sms.ir)
@@ -43,7 +43,7 @@ A WordPress / WooCommerce plugin that lets customers request an **SMS notificati
 - 🧩 **Pattern / template based messages** — each gateway sends via its verified template, passing the product name as a parameter.
 - 🎯 **Display targeting** — show the notify button on *all* out-of-stock products, only selected **categories**, or only selected **products**.
 - 🛡️ **Anti-spam / rate limiting** — configurable per-IP (hourly) and per-phone (daily) request limits using a fixed-window counter built on the WordPress transient API.
-- 🗂️ **Admin requests panel** — browse, filter (status / phone / date range), paginate, delete (single + bulk), and resend notifications.
+- 🗂️ **Admin requests panel** — browse, filter (status / phone / date range), paginate, and re-queue notifications (single + bulk). Requests are **never deleted**, so reports always reflect the full history.
 - 📊 **Statistics page** — top products, top categories, daily request trends, and status breakdown.
 - 📱 **Iranian mobile number validation & normalization** (accepts `09xxxxxxxxx`, `+98...`, `0098...`).
 - 🔒 **PII-aware logging** — debug logs only when `WP_DEBUG` is enabled.
@@ -76,7 +76,7 @@ After activation, three pages are added under the **WooCommerce** menu:
 | Page | Slug | What it does |
 |------|------|--------------|
 | ⚙️ **تنظیمات اطلاع‌رسانی پیامکی** (Settings) | `upsn-settings` | Button visibility, button/modal/form styling, messages, anti-spam limits, and SMS provider credentials. |
-| 🗂️ **درخواست‌های اطلاع‌رسانی** (Requests) | `upsn-requests` | View, filter, paginate, delete, and resend notification requests. |
+| 🗂️ **درخواست‌های اطلاع‌رسانی** (Requests) | `upsn-requests` | View, filter, paginate, and re-queue notification requests. |
 | 📊 **آمار اطلاع‌رسانی** (Statistics) | `upsn-stats` | Top products/categories, daily trends, and status breakdown. |
 
 ### 📨 SMS provider setup
@@ -119,7 +119,7 @@ flowchart LR
 ```
 unavailable-product-sms-notifier/
 ├── unavailable-product-sms-notifier.php   # Plugin bootstrap, constants, dependency check
-├── uninstall.php                          # Cleanup on uninstall
+├── uninstall.php                          # Removes settings only; request history is kept
 ├── includes/
 │   ├── class-database.php                 # Table creation, CRUD, statistics queries
 │   ├── class-frontend.php                 # Button + modal rendering, asset enqueue
@@ -140,7 +140,7 @@ unavailable-product-sms-notifier/
 │       └── statistics.php
 └── assets/
     ├── css/  (admin.css, popup.css)
-    └── js/   (popup.js)
+    └── js/   (popup.js, admin.js)
 ```
 
 ---
@@ -148,7 +148,8 @@ unavailable-product-sms-notifier/
 ## 🔐 Data & privacy
 
 - 🗄️ Subscriber phone numbers are stored in the `{prefix}_upsn_notify_requests` table.
-- ♻️ Data is **intentionally preserved on deactivation** and removed on uninstall (`uninstall.php`).
+- ♻️ Request data is **never removed**: not on deactivation, not on uninstall, and there is no delete action in the admin. Only the settings (which hold SMS gateway credentials) are removed on uninstall.
+- 🔁 **Re-queue** adds a new `pending` request for the same phone + product and leaves the original row untouched, so earlier `notified` / `failed` history stays in the reports.
 - 🔒 Debug output (which may contain PII) is only written to the PHP error log when `WP_DEBUG` is enabled.
 
 ---

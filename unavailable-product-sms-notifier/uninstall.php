@@ -1,14 +1,11 @@
 <?php
 /**
  * Runs when the plugin is deleted (not on deactivation).
- * Removes the custom table and all plugin options.
+ *
+ * The requests table (and its db version option) is kept on purpose: it is the
+ * history behind the reports, so deleting the plugin must never destroy it.
+ * Only the settings are removed, because they contain SMS gateway credentials.
  */
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-global $wpdb;
-
-$table = $wpdb->prefix . 'upsn_notify_requests';
-$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
-
 delete_option( 'upsn_settings' );
-delete_option( 'upsn_db_version' );
