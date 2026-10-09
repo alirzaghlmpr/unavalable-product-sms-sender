@@ -103,6 +103,10 @@ class UPSN_Frontend {
                 </button>
 
                 <div class="upsn-modal__view upsn-modal__view--form">
+                    <div class="upsn-modal__art" aria-hidden="true">
+                        <img src="<?php echo esc_url( UPSN_URL . 'assets/img/icon-128.png' ); ?>" alt="" width="80" height="80" />
+                    </div>
+
                     <?php if ( $product_name !== '' ) : ?>
                         <div class="upsn-modal__product">
                             <?php if ( $product_image ) : ?>

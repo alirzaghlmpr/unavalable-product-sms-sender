@@ -103,7 +103,9 @@ class UPSN_Admin_Panel {
         ?>
         <header class="upsn-hero">
             <div class="upsn-hero__brand">
-                <span class="upsn-mark"><?php echo self::icon( 'bell', 22 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                <span class="upsn-mark">
+                    <img src="<?php echo esc_url( UPSN_URL . 'assets/img/icon-128.png' ); ?>" alt="" width="60" height="60" />
+                </span>
                 <div>
                     <h1><?php esc_html_e( 'اطلاع‌رسانی موجود شدن', 'upsn' ); ?></h1>
                     <p><?php echo esc_html( $subtitle ); ?></p>
